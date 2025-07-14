@@ -1,8 +1,9 @@
-﻿using System;
+﻿using Microsoft.JSInterop;
+using Soenneker.Blazor.Floating.Windows.Dtos;
+using Soenneker.Blazor.Floating.Windows.Options;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.JSInterop;
-using Soenneker.Blazor.Floating.Windows.Options;
 
 namespace Soenneker.Blazor.Floating.Windows.Abstract;
 
@@ -91,8 +92,8 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// </summary>
     /// <param name="id">The window ID.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>A tuple containing the width and height.</returns>
-    ValueTask<(int width, int height)> GetSize(string id, CancellationToken cancellationToken = default);
+    /// <returns>A WindowSize object containing the width and height.</returns>
+    ValueTask<FloatingWindowSize> GetSize(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the size of the window.
@@ -114,8 +115,15 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// Gets the viewport dimensions.
     /// </summary>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
-    /// <returns>A tuple containing the viewport width and height.</returns>
-    ValueTask<(int width, int height)> GetViewportSize(CancellationToken cancellationToken = default);
+    /// <returns>A FloatingWindowVieportSize object containing the viewport width and height.</returns>
+    ValueTask<FloatingWindowSize> GetViewportSize(CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Centers the window in the viewport, accounting for its current size, without making it visible.
+    /// </summary>
+    /// <param name="id">The window ID.</param>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Disposes internal state and JavaScript module references.

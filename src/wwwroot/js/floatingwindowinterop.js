@@ -6,7 +6,6 @@
     }
 
     async create(id, optionsJson) {
-        console.log('FloatingWindowInterop.create called with:', { id });
         const options = JSON.parse(optionsJson);
 
         const window = document.getElementById(id);
@@ -28,12 +27,21 @@
         try {
             window.style.position = 'fixed';
             window.style.zIndex = options.zIndex || this.nextZIndex++;
-            
-            if (options.width) {
-                window.style.width = `${options.width}px`;
-            }
-            if (options.height) {
-                window.style.height = `${options.height}px`;
+
+            if (options.autoSizeToContent) {
+                window.style.width = 'auto';
+                window.style.height = 'auto';
+                window.style.maxWidth = '';
+                window.style.maxHeight = '';
+                window.style.minWidth = '';
+                window.style.minHeight = '';
+            } else {
+                if (options.width) {
+                    window.style.width = `${options.width}px`;
+                }
+                if (options.height) {
+                    window.style.height = `${options.height}px`;
+                }
             }
             if (options.initialX !== undefined) {
                 window.style.left = `${options.initialX}px`;
@@ -45,6 +53,24 @@
             console.error('Error setting initial styles for window', id, ':', error);
         }
 
+        // --- Dynamic auto-size to content ---
+        let resizeObserver = null;
+        if (options.dynamicAutoSizeToContent) {
+            const content = window.querySelector('.floating-window-content');
+            if (content) {
+                resizeObserver = new ResizeObserver(() => {
+                    window.style.width = 'auto';
+                    window.style.height = 'auto';
+                    // Notify .NET to recenter if enabled
+                    const windowData = this.windows.get(id);
+                    if (options.recenterOnResize && windowData && windowData.dotNetRef) {
+                        windowData.dotNetRef.invokeMethodAsync('OnContentResized').catch(console.error);
+                    }
+                });
+                resizeObserver.observe(content);
+            }
+        }
+
         // Store window data
         this.windows.set(id, {
             element: window,
@@ -53,9 +79,10 @@
             isResizing: false,
             dragStart: { x: 0, y: 0 },
             resizeStart: { width: 0, height: 0, x: 0, y: 0 },
-            resizeDirection: null
+            resizeDirection: null,
+            resizeObserver: resizeObserver
         });
-        
+
         // Setup dragging
         if (options.draggable) {
             this.setupDragging(id);
@@ -65,9 +92,6 @@
         if (options.resizable) {
             this.setupResizing(id);
         }
-
-        // Don't show the window automatically - let the Show() method handle it
-        // The CSS already handles display: none by default
     }
 
     setupDragging(id) {
@@ -145,27 +169,6 @@
         document.addEventListener('mouseup', onMouseUp);
     }
 
-    updateDragPosition(id, e) {
-        const windowData = this.windows.get(id);
-        if (!windowData || !windowData.isDragging) return;
-
-        let newX = e.clientX - windowData.dragStart.x;
-        let newY = e.clientY - windowData.dragStart.y;
-
-        // Constrain to viewport if enabled
-        if (windowData.options.constrainToViewport) {
-            const rect = windowData.element.getBoundingClientRect();
-            const viewportWidth = window.innerWidth;
-            const viewportHeight = window.innerHeight;
-
-            newX = Math.max(0, Math.min(newX, viewportWidth - rect.width));
-            newY = Math.max(0, Math.min(newY, viewportHeight - rect.height));
-        }
-
-        windowData.element.style.left = `${newX}px`;
-        windowData.element.style.top = `${newY}px`;
-    }
-
     startResizing(id, e, direction) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
@@ -201,22 +204,38 @@
         document.addEventListener('mouseup', onMouseUp);
     }
 
+    updateDragPosition(id, e) {
+        const windowData = this.windows.get(id);
+        if (!windowData || !windowData.isDragging) return;
+
+        let newX = e.clientX - windowData.dragStart.x;
+        let newY = e.clientY - windowData.dragStart.y;
+
+        // Constrain to viewport if enabled
+        if (windowData.options.constrainToViewport) {
+            const rect = windowData.element.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            newX = Math.max(0, Math.min(newX, viewportWidth - rect.width));
+            newY = Math.max(0, Math.min(newY, viewportHeight - rect.height));
+        }
+
+        windowData.element.style.left = `${newX}px`;
+        windowData.element.style.top = `${newY}px`;
+    }
+
     updateResizePosition(id, e) {
         const windowData = this.windows.get(id);
         if (!windowData || !windowData.isResizing) return;
 
         const deltaX = e.clientX - windowData.resizeStart.mouseX;
         const deltaY = e.clientY - windowData.resizeStart.mouseY;
-        
-        console.log('Resizing window:', id, 'direction:', windowData.resizeDirection, 'deltaX:', deltaX, 'deltaY:', deltaY);
         const direction = windowData.resizeDirection;
-
         let newWidth = windowData.resizeStart.width;
         let newHeight = windowData.resizeStart.height;
         let newX = windowData.resizeStart.x;
         let newY = windowData.resizeStart.y;
-
-        // Calculate new dimensions based on resize direction
         if (direction.includes('e')) {
             newWidth = Math.max(windowData.options.minWidth, windowData.resizeStart.width + deltaX);
             if (windowData.options.maxWidth) {
@@ -224,17 +243,9 @@
             }
         }
         if (direction.includes('w')) {
-            // For west resize, the right edge stays anchored
             const maxWidthChange = windowData.resizeStart.width - windowData.options.minWidth;
-            
-            // deltaX is positive when dragging right, negative when dragging left
-            // We want to limit the change to respect minimum width
             const clampedDeltaX = Math.max(-maxWidthChange, Math.min(deltaX, maxWidthChange));
-            
-            // Calculate new width (decreasing when dragging right, increasing when dragging left)
             newWidth = windowData.resizeStart.width - clampedDeltaX;
-            
-            // Adjust X position so the right edge stays in the same place
             const originalX = windowData.resizeStart.x;
             const originalWidth = windowData.resizeStart.width;
             newX = originalX + (originalWidth - newWidth);
@@ -246,17 +257,9 @@
             }
         }
         if (direction.includes('n')) {
-            // For north resize, the bottom edge stays anchored
             const maxHeightChange = windowData.resizeStart.height - windowData.options.minHeight;
-            
-            // deltaY is positive when dragging down, negative when dragging up
-            // We want to limit the change to respect minimum height
             const clampedDeltaY = Math.max(-maxHeightChange, Math.min(deltaY, maxHeightChange));
-            
-            // Calculate new height (decreasing when dragging down, increasing when dragging up)
             newHeight = windowData.resizeStart.height - clampedDeltaY;
-            
-            // Adjust Y position so the bottom edge stays in the same place
             const originalY = windowData.resizeStart.y;
             const originalHeight = windowData.resizeStart.height;
             newY = originalY + (originalHeight - newHeight);
@@ -273,42 +276,32 @@
             if (newX + newWidth > viewportWidth) {
                 newWidth = Math.max(minWidth, viewportWidth - newX);
             }
-            
             // Constrain height to viewport
             if (newY + newHeight > viewportHeight) {
                 newHeight = Math.max(minHeight, viewportHeight - newY);
             }
-            
             // Constrain X position to viewport
             if (newX < 0) {
                 newX = 0;
-                // Adjust width if it would exceed viewport
                 if (newWidth > viewportWidth) {
                     newWidth = viewportWidth;
                 }
             }
-            
             // Constrain Y position to viewport
             if (newY < 0) {
                 newY = 0;
-                // Adjust height if it would exceed viewport
                 if (newHeight > viewportHeight) {
                     newHeight = viewportHeight;
                 }
             }
-            
-            // Ensure minimum dimensions are maintained
             newWidth = Math.max(minWidth, newWidth);
             newHeight = Math.max(minHeight, newHeight);
         }
 
-        // Apply new dimensions
         windowData.element.style.width = `${newWidth}px`;
         windowData.element.style.height = `${newHeight}px`;
         windowData.element.style.left = `${newX}px`;
         windowData.element.style.top = `${newY}px`;
-        
-        console.log('Window resized to:', { width: newWidth, height: newHeight, x: newX, y: newY });
     }
 
     setCallbacks(id, dotNetRef) {
@@ -324,11 +317,36 @@
             console.warn('Window data not found for id:', id);
             return;
         }
-
-        windowData.element.style.display = 'block';
-        windowData.element.classList.add('visible');
-        if (windowData.dotNetRef) {
-            windowData.dotNetRef.invokeMethodAsync("InvokeOnShow").catch(console.error);
+        const el = windowData.element;
+        if (windowData.options.centerOnShow) {
+            // Phase 1: Render off-screen but hidden
+            el.style.display = 'block';
+            el.style.visibility = 'hidden';
+            el.style.left = '-9999px';
+            el.style.top = '-9999px';
+            // Phase 2: After layout, measure and center
+            requestAnimationFrame(() => {
+                const width = el.offsetWidth;
+                const height = el.offsetHeight;
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+                const x = Math.max(0, Math.round((viewportWidth - width) / 2));
+                const y = Math.max(0, Math.round((viewportHeight - height) / 2));
+                el.style.left = `${x}px`;
+                el.style.top = `${y}px`;
+                el.style.visibility = 'visible';
+                el.classList.add('visible');
+                if (windowData.dotNetRef) {
+                    windowData.dotNetRef.invokeMethodAsync("InvokeOnShow").catch(console.error);
+                }
+            });
+        } else {
+            el.style.display = 'block';
+            el.style.visibility = 'visible';
+            el.classList.add('visible');
+            if (windowData.dotNetRef) {
+                windowData.dotNetRef.invokeMethodAsync("InvokeOnShow").catch(console.error);
+            }
         }
     }
 
@@ -359,7 +377,6 @@
 
     close(id) {
         this.hide(id);
-        this.destroy(id);
     }
 
     destroy(id) {
@@ -375,6 +392,14 @@
         }
         if (windowData.cleanupResizing) {
             windowData.cleanupResizing.forEach(cleanup => cleanup());
+        }
+        // Cleanup ResizeObserver
+        if (windowData.resizeObserver) {
+            const content = windowData.element.querySelector('.floating-window-content');
+            if (content) {
+                windowData.resizeObserver.unobserve(content);
+            }
+            windowData.resizeObserver.disconnect();
         }
 
         // Remove from DOM
@@ -433,6 +458,29 @@
             width: window.innerWidth,
             height: window.innerHeight
         };
+    }
+
+    centerInViewport(id) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+        const el = windowData.element;
+        // Temporarily make visible to measure if needed
+        const prevDisplay = el.style.display;
+        const prevVisibility = el.style.visibility;
+        el.style.visibility = 'hidden';
+        el.style.display = 'block';
+        // Measure
+        const width = el.offsetWidth;
+        const height = el.offsetHeight;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        const x = Math.max(0, Math.round((viewportWidth - width) / 2));
+        const y = Math.max(0, Math.round((viewportHeight - height) / 2));
+        el.style.left = `${x}px`;
+        el.style.top = `${y}px`;
+        // Restore previous display/visibility
+        el.style.display = prevDisplay;
+        el.style.visibility = prevVisibility;
     }
 }
 

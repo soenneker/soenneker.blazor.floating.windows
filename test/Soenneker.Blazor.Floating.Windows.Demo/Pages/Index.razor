@@ -4,35 +4,134 @@
 @using Soenneker.Blazor.Floating.Windows.Options
 
 @inject ILogger<Index> Logger
+@inject IJSRuntime JS
 
-<div class="demo-container" >
-    <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" alt="Logo" height="32" />
-    <h1>Soenneker.Blazor.Floating.Windows Demo</h1>
-    <p>This page demonstrates the floating window component with drag, resize, and positioning capabilities.</p>
+@* Add Font Awesome for GitHub icon *@
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
 
-    <div class="demo-controls" >
-        <button @onclick="ShowBasicWindow" class="demo-button" >Show Basic Window</button>
-        <button @onclick="ShowCustomWindow" class="demo-button" >Show Custom Window</button>
-        <button @onclick="ShowCenteredWindow" class="demo-button" >Show Centered Window</button>
-        <button @onclick="ShowDarkWindow" class="demo-button" >Show Dark Window</button>
-        <button @onclick="ShowAllWindows" class="demo-button" >Show All Windows</button>
-        <button @onclick="HideAllWindows" class="demo-button" >Hide All Windows</button>
+<div class="github-topright">
+    <a href="https://github.com/soenneker/soenneker.blazor.floating.windows" target="_blank" title="View on GitHub">
+        <i class="fab fa-github"></i>
+    </a>
+</div>
+
+<style>
+    .github-topright {
+        position: fixed;
+        top: 1.2rem;
+        right: 1.5rem;
+        z-index: 2000;
+    }
+    .github-topright a {
+        color: #24292f;
+        font-size: 2.2rem;
+        display: inline-block;
+        transition: color 0.2s;
+        text-decoration: none;
+        background: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 0;
+    }
+    .github-topright a:hover {
+        color: #0366d6;
+        background: none;
+    }
+</style>
+
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="logo-container">
+            <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" alt="Logo" class="hero-logo" />
+        </div>
+        <h1 class="hero-title">Soenneker.Blazor.Floating.Windows</h1>
+        <p class="hero-subtitle">Powerful, customizable floating windows for Blazor applications</p>
+        <div class="hero-badges">
+            <span class="badge">🚀 Modern</span>
+            <span class="badge">⚡ Fast</span>
+            <span class="badge">🎨 Customizable</span>
+            <span class="badge">📱 Responsive</span>
+        </div>
     </div>
+</div>
 
-    <div class="demo-info" >
-        <h3>Features:</h3>
-        <ul>
-            <li>✅ Draggable windows (drag by title bar)</li>
-            <li>✅ Resizable windows (drag edges/corners)</li>
-            <li>✅ Close button</li>
-            <li>✅ Customizable title</li>
-            <li>✅ Viewport constraints</li>
-            <li>✅ Z-index management</li>
-            <li>✅ Responsive design</li>
-            <li>✅ Highly configurable styling</li>
-            <li>✅ Light and dark themes</li>
-            <li>✅ Custom CSS support</li>
-        </ul>
+<div class="demo-container">
+    <div class="demo-section">
+        <h2 class="section-title">🎮 Interactive Examples</h2>
+        <p class="section-description">Click the buttons below to see different floating window configurations in action.</p>
+        <div class="demo-controls">
+            <button @onclick="ShowBasicWindow" class="demo-button primary"><span class="button-icon">🪟</span>Basic Window</button>
+            <button @onclick="ShowCustomWindow" class="demo-button secondary"><span class="button-icon">🎨</span>Custom Styled</button>
+            <button @onclick="ShowCenteredWindow" class="demo-button success"><span class="button-icon">🎯</span>Centered Window</button>
+            <button @onclick="ShowDarkWindow" class="demo-button dark"><span class="button-icon">🌙</span>Dark Theme</button>
+            <button @onclick="ShowInteractiveWindow" class="demo-button warning"><span class="button-icon">⚡</span>Interactive Demo</button>
+            <button @onclick="ShowDataWindow" class="demo-button info"><span class="button-icon">📊</span>Data Display</button>
+            <button @onclick="ShowAllWindows" class="action-button show-all"><span class="button-icon">📂</span>Show All Windows</button>
+            <button @onclick="HideAllWindows" class="action-button hide-all"><span class="button-icon">🗂️</span>Hide All Windows</button>
+        </div>
+    </div>
+    <div class="demo-section">
+        <h2 class="section-title">✨ Features Showcase</h2>
+        <div class="features-grid">
+            <div class="feature-card"><div class="feature-icon">🎯</div><h3>Draggable Windows</h3><p>Drag windows by the title bar to reposition them anywhere on the screen.</p></div>
+            <div class="feature-card"><div class="feature-icon">📏</div><h3>Resizable Windows</h3><p>Resize windows by dragging the edges and corners for perfect fit.</p></div>
+            <div class="feature-card"><div class="feature-icon">🎨</div><h3>Customizable Themes</h3><p>Light, dark, and custom themes with full CSS customization support.</p></div>
+            <div class="feature-card"><div class="feature-icon">📱</div><h3>Responsive Design</h3><p>Windows adapt to different screen sizes and maintain usability.</p></div>
+            <div class="feature-card"><div class="feature-icon">🔒</div><h3>Viewport Constraints</h3><p>Windows stay within the viewport bounds for better user experience.</p></div>
+            <div class="feature-card"><div class="feature-icon">⚡</div><h3>Z-Index Management</h3><p>Automatic z-index management ensures proper window layering.</p></div>
+            <div class="feature-card"><div class="feature-icon">🔄</div><h3>Dynamic Auto Resize</h3><p>Windows can automatically resize to fit their content as it grows or shrinks.</p></div>
+        </div>
+    </div>
+    <div class="demo-section">
+        <h2 class="section-title">📚 Code Examples</h2>
+        <div class="code-examples">
+            <div class="code-tabs">
+                <button class="tab-button @(activeTab == "basic" ? "active" : "")" @onclick="SetTabBasic">Basic Usage</button>
+                <button class="tab-button @(activeTab == "custom" ? "active" : "")" @onclick="SetTabCustom">Custom Styling</button>
+                <button class="tab-button @(activeTab == "events" ? "active" : "")" @onclick="SetTabEvents">Event Handling</button>
+            </div>
+            <div class="code-content">
+                @if (activeTab == "basic")
+                {
+                    <pre class="code-block"><code>&lt;FloatingWindow Title="My Window" 
+                Width="400" Height="300"
+                InitialX="50" InitialY="50"&gt;
+    &lt;div&gt;Your content here&lt;/div&gt;
+&lt;/FloatingWindow&gt;</code></pre>
+                }
+                else if (activeTab == "custom")
+                {
+                    <pre class="code-block"><code>var customTheme = new FloatingWindowStyleOptions
+{
+    TitleBarBackgroundGradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+    TitleBarTextColor = "#ffffff",
+    CloseButtonTextColor = "#ffffff"
+};
+
+&lt;FloatingWindow StyleOptions="customTheme"&gt;
+    &lt;div&gt;Custom styled content&lt;/div&gt;
+&lt;/FloatingWindow&gt;</code></pre>
+                }
+                else if (activeTab == "events")
+                {
+                    <pre class="code-block"><code>&lt;FloatingWindow OnShow="OnWindowShow"
+                OnHide="OnWindowHide"
+                OnDragStart="OnDragStart"
+                OnDragEnd="OnDragEnd"&gt;
+    &lt;div&gt;Event-driven content&lt;/div&gt;
+&lt;/FloatingWindow&gt;</code></pre>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="demo-section">
+        <h2 class="section-title">📈 Live Statistics</h2>
+        <div class="stats-grid">
+            <div class="stat-card"><div class="stat-number">@windowShowCount</div><div class="stat-label">Windows Shown</div></div>
+            <div class="stat-card"><div class="stat-number">@dragCount</div><div class="stat-label">Drag Operations</div></div>
+            <div class="stat-card"><div class="stat-number">@activeWindows</div><div class="stat-label">Active Windows</div></div>
+            <div class="stat-card"><div class="stat-number">@totalInteractions</div><div class="stat-label">Total Interactions</div></div>
+        </div>
     </div>
 </div>
 
@@ -47,12 +146,19 @@
                 OnShow="OnWindowShow"
                 OnHide="OnWindowHide"
                 OnDragStart="OnDragStart"
-                OnDragEnd="OnDragEnd" >
-    <div class="window-content" >
+                OnDragEnd="OnDragEnd"
+AutoSizeToContent="true"
+>
+    <div class="window-content">
         <h3>Basic Floating Window</h3>
         <p>This is a basic floating window with default light theme styling.</p>
-        <p>Try dragging the title bar to move it, or drag the edges to resize it.</p>
-        <button @onclick="() => basicWindow?.Hide()" >Hide Window</button>
+        <div class="window-features">
+            <div class="feature-item">✅ Draggable title bar</div>
+            <div class="feature-item">✅ Resizable edges</div>
+            <div class="feature-item">✅ Close button</div>
+            <div class="feature-item">✅ Light theme</div>
+        </div>
+        <button @onclick="() => basicWindow?.Hide()" class="window-button">Hide Window</button>
     </div>
 </FloatingWindow>
 
@@ -66,21 +172,24 @@
                 StyleOptions="DemoTheme"
                 ShowCloseButton="true"
                 Draggable="true"
-                Resizable="true" >
-    <div class="window-content" >
+                Resizable="true">
+    <div class="window-content">
         <h3>Custom Styled Window</h3>
-        <p>This window uses the demo theme with colorful gradient styling.</p>
-        <div class="custom-content" >
-            <div class="card" >
-                <h4>Card 1</h4>
-                <p>This is some content in a card.</p>
+        <p>This window uses a beautiful gradient theme with enhanced styling.</p>
+        <div class="custom-content">
+            <div class="card">
+                <h4>🎨 Custom Theme</h4>
+                <p>Gradient background with custom colors and hover effects.</p>
             </div>
-            <div class="card" >
-                <h4>Card 2</h4>
-                <p>Another card with different content.</p>
+            <div class="card">
+                <h4>⚡ Interactive</h4>
+                <p>Fully interactive with smooth animations and transitions.</p>
             </div>
         </div>
-        <button @onclick="() => customWindow?.Close()" >Close Window</button>
+        <div class="window-actions">
+            <button @onclick="() => customWindow?.Close()" class="window-button danger">Close Window</button>
+            <button @onclick="() => customWindow?.SetSize(600, 450)" class="window-button">Resize</button>
+        </div>
     </div>
 </FloatingWindow>
 
@@ -90,14 +199,14 @@
                 Width="350"
                 Height="250"
                 StyleOptions="FloatingWindowStyleOptions.DefaultLight"
-                CenterOnShow="true" >
-    <div class="window-content" >
+                CenterOnShow="true">
+    <div class="window-content">
         <h3>Centered Window</h3>
-        <p>This window is automatically centered when shown.</p>
-        <p>It will appear in the center of the viewport.</p>
-        <div class="centered-controls" >
-            <button @onclick="() => centeredWindow?.SetPosition(100, 100)" >Move to (100,100)</button>
-            <button @onclick="() => centeredWindow?.SetSize(400, 300)" >Resize to 400x300</button>
+        <p>This window automatically centers itself when shown.</p>
+        <div class="centered-controls">
+            <button @onclick="() => centeredWindow?.SetPosition(100, 100)" class="window-button small">Move to (100,100)</button>
+            <button @onclick="() => centeredWindow?.SetSize(400, 300)" class="window-button small">Resize to 400x300</button>
+            <button @onclick="SetPositionToCenter" class="window-button small">Re-center</button>
         </div>
     </div>
 </FloatingWindow>
@@ -109,18 +218,103 @@
                 Height="300"
                 InitialX="300"
                 InitialY="150"
-                StyleOptions="FloatingWindowStyleOptions.DefaultDark" >
-    <div class="window-content" >
+                StyleOptions="FloatingWindowStyleOptions.DefaultDark">
+    <div class="window-content dark">
         <h3>Dark Theme Window</h3>
-        <p>This window uses the default dark theme styling.</p>
-        <p>Perfect for applications that support dark mode.</p>
-        <div class="dark-content" >
-            <div class="dark-card" >
-                <h4>Dark Card</h4>
-                <p>This card adapts to the dark theme.</p>
+        <p>Perfect for applications that support dark mode preferences.</p>
+        <div class="dark-content">
+            <div class="dark-card">
+                <h4>🌙 Dark Mode</h4>
+                <p>Easy on the eyes with proper contrast and readability.</p>
             </div>
         </div>
-        <button @onclick="() => darkWindow?.Hide()" >Hide Window</button>
+        <button @onclick="() => darkWindow?.Hide()" class="window-button">Hide Window</button>
+    </div>
+</FloatingWindow>
+
+<!-- Interactive Window -->
+<FloatingWindow @ref="interactiveWindow"
+                Title="Interactive Demo"
+                Width="500"
+                Height="400"
+                InitialX="150"
+                InitialY="200"
+                StyleOptions="InteractiveTheme">
+    <div class="window-content">
+        <h3>Interactive Demo Window</h3>
+        <p>This window demonstrates dynamic content and real-time updates.</p>
+        <div class="interactive-content">
+            <div class="counter-section">
+                <h4>Counter: @interactiveCounter</h4>
+                <div class="counter-controls">
+                    <button @onclick="IncrementCounter" class="counter-btn">+</button>
+                    <button @onclick="DecrementCounter" class="counter-btn">-</button>
+                    <button @onclick="ResetCounter" class="counter-btn">Reset</button>
+                </div>
+            </div>
+            <div class="color-picker">
+                <h4>Theme Color</h4>
+                <div class="color-options">
+                    <button @onclick="@(() => ChangeThemeColor("#667eea"))" class="color-btn" style="background: #667eea"></button>
+                    <button @onclick="@(() => ChangeThemeColor("#f56565"))" class="color-btn" style="background: #f56565"></button>
+                    <button @onclick="@(() => ChangeThemeColor("#48bb78"))" class="color-btn" style="background: #48bb78"></button>
+                    <button @onclick="@(() => ChangeThemeColor("#ed8936"))" class="color-btn" style="background: #ed8936"></button>
+                </div>
+            </div>
+        </div>
+        <div class="window-actions">
+            <button @onclick="() => interactiveWindow?.Hide()" class="window-button">Close</button>
+        </div>
+    </div>
+</FloatingWindow>
+
+<!-- Data Window -->
+<FloatingWindow @ref="dataWindow"
+                Title="Data Display Window"
+                Width="600"
+                Height="450"
+                InitialX="250"
+                InitialY="100"
+                StyleOptions="DataTheme">
+    <div class="window-content">
+        <h3>Data Display Window</h3>
+        <p>Showcase for displaying structured data in floating windows.</p>
+        <div class="data-content">
+            <div class="data-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Status</th>
+                            <th>Progress</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (DataItem item in dataItems)
+                        {
+                            <tr>
+                                <td>@item.Name</td>
+                                <td><span class="status @item.Status.ToLower()">@item.Status</span></td>
+                                <td>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: @(item.Progress)%"></div>
+                                    </div>
+                                    <span class="progress-text">@item.Progress%</span>
+                                </td>
+                                <td>
+                                    <button @onclick="() => UpdateItem(item.Id)" class="action-btn">Update</button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div class="window-actions">
+            <button @onclick="AddDataItem" class="window-button">Add Item</button>
+            <button @onclick="() => dataWindow?.Hide()" class="window-button">Close</button>
+        </div>
     </div>
 </FloatingWindow>
 
@@ -129,8 +323,28 @@
     private FloatingWindow? customWindow;
     private FloatingWindow? centeredWindow;
     private FloatingWindow? darkWindow;
+    private FloatingWindow? interactiveWindow;
+    private FloatingWindow? dataWindow;
+    private FloatingWindow? dynamicAutoSizeWindow;
 
-    // Demo theme for the custom window (not part of the library)
+    private string activeTab = "basic";
+    private int windowShowCount = 0;
+    private int dragCount = 0;
+    private int activeWindows = 0;
+    private int totalInteractions = 0;
+    private int interactiveCounter = 0;
+
+    private List<DataItem> dataItems = new()
+    {
+        new DataItem { Id = 1, Name = "Project Alpha", Status = "Active", Progress = 75 },
+        new DataItem { Id = 2, Name = "Project Beta", Status = "Pending", Progress = 30 },
+        new DataItem { Id = 3, Name = "Project Gamma", Status = "Completed", Progress = 100 },
+        new DataItem { Id = 4, Name = "Project Delta", Status = "Active", Progress = 45 }
+    };
+
+    private List<string> dynamicItems = new() { "Item 1", "Item 2" };
+
+    // Demo theme for the custom window
     private static readonly FloatingWindowStyleOptions DemoTheme = new()
     {
         TitleBarBackgroundGradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
@@ -143,24 +357,64 @@
         FocusBorderColor = "rgba(102, 126, 234, 0.3)"
     };
 
+    // Interactive theme
+    private static readonly FloatingWindowStyleOptions InteractiveTheme = new()
+    {
+        TitleBarBackgroundGradient = "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+        TitleBarTextColor = "#ffffff",
+        TitleBarBorderBottomColor = "rgba(255, 255, 255, 0.1)",
+        CloseButtonTextColor = "#ffffff",
+        CloseButtonHoverBackgroundColor = "rgba(255, 255, 255, 0.2)",
+        ResizeHandleHoverBackgroundColor = "rgba(240, 147, 251, 0.1)",
+        FocusBorderColor = "rgba(240, 147, 251, 0.3)"
+    };
+
+    // Data theme
+    private static readonly FloatingWindowStyleOptions DataTheme = new()
+    {
+        TitleBarBackgroundGradient = "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+        TitleBarTextColor = "#ffffff",
+        TitleBarBorderBottomColor = "rgba(255, 255, 255, 0.1)",
+        CloseButtonTextColor = "#ffffff",
+        CloseButtonHoverBackgroundColor = "rgba(255, 255, 255, 0.2)",
+        ResizeHandleHoverBackgroundColor = "rgba(79, 172, 254, 0.1)",
+        FocusBorderColor = "rgba(79, 172, 254, 0.3)"
+    };
+
     private void ShowBasicWindow()
     {
         basicWindow?.Show();
+        totalInteractions++;
     }
 
     private void ShowCustomWindow()
     {
         customWindow?.Show();
+        totalInteractions++;
     }
 
     private void ShowCenteredWindow()
     {
         centeredWindow?.Show();
+        totalInteractions++;
     }
 
     private void ShowDarkWindow()
     {
         darkWindow?.Show();
+        totalInteractions++;
+    }
+
+    private void ShowInteractiveWindow()
+    {
+        interactiveWindow?.Show();
+        totalInteractions++;
+    }
+
+    private void ShowDataWindow()
+    {
+        dataWindow?.Show();
+        totalInteractions++;
     }
 
     private void ShowAllWindows()
@@ -169,6 +423,9 @@
         customWindow?.Show();
         centeredWindow?.Show();
         darkWindow?.Show();
+        interactiveWindow?.Show();
+        dataWindow?.Show();
+        totalInteractions++;
     }
 
     private void HideAllWindows()
@@ -177,15 +434,21 @@
         customWindow?.Hide();
         centeredWindow?.Hide();
         darkWindow?.Hide();
+        interactiveWindow?.Hide();
+        dataWindow?.Hide();
+        totalInteractions++;
     }
 
     private void OnWindowShow()
     {
+        windowShowCount++;
+        activeWindows++;
         Logger.LogInformation("Window shown");
     }
 
     private void OnWindowHide()
     {
+        activeWindows = Math.Max(0, activeWindows - 1);
         Logger.LogInformation("Window hidden");
     }
 
@@ -196,129 +459,78 @@
 
     private void OnDragEnd()
     {
+        dragCount++;
+        totalInteractions++;
         Logger.LogInformation("Window drag ended");
     }
 
+    private void IncrementCounter()
+    {
+        interactiveCounter++;
+        totalInteractions++;
+    }
+
+    private void DecrementCounter()
+    {
+        interactiveCounter--;
+        totalInteractions++;
+    }
+
+    private void ResetCounter()
+    {
+        interactiveCounter = 0;
+        totalInteractions++;
+    }
+
+    private void ChangeThemeColor(string color)
+    {
+        // This would update the theme dynamically
+        totalInteractions++;
+    }
+
+    private void UpdateItem(int id)
+    {
+        DataItem? item = dataItems.FirstOrDefault(x => x.Id == id);
+        if (item != null)
+        {
+            item.Progress = Math.Min(100, item.Progress + 10);
+            totalInteractions++;
+        }
+    }
+
+    private void AddDataItem()
+    {
+        int newId = dataItems.Count > 0 ? dataItems.Max(x => x.Id) + 1 : 1;
+        dataItems.Add(new DataItem
+        {
+            Id = newId,
+            Name = $"Project {char.ConvertFromUtf32(65 + (newId - 1) % 26)}",
+            Status = "Pending",
+            Progress = 0
+        });
+        totalInteractions++;
+    }
+
+    private async Task SetPositionToCenter()
+    {
+        if (centeredWindow is not null)
+        {
+            await centeredWindow.Center();
+        }
+    }
+
+    private void AddDynamicItem() => dynamicItems.Add($"Item {dynamicItems.Count + 1}");
+    private void RemoveDynamicItem() { if (dynamicItems.Count > 0) dynamicItems.RemoveAt(dynamicItems.Count - 1); }
+
+    private void SetTabBasic() => activeTab = "basic";
+    private void SetTabCustom() => activeTab = "custom";
+    private void SetTabEvents() => activeTab = "events";
+
+    public class DataItem
+    {
+        public int Id { get; set; }
+        public string Name { get; set; } = "";
+        public string Status { get; set; } = "";
+        public int Progress { get; set; }
+    }
 }
-
-<style>
-    .demo-container {
-        max-width: 800px;
-        margin: 0 auto;
-        padding: 20px;
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    }
-
-    .demo-controls {
-        margin: 20px 0;
-        display: flex;
-        gap: 10px;
-        flex-wrap: wrap;
-    }
-
-    .demo-button {
-        padding: 10px 16px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-weight: 500;
-        transition: transform 0.2s ease;
-    }
-
-    .demo-button:hover {
-        transform: translateY(-1px);
-    }
-
-    .demo-info {
-        background: #f8f9fa;
-        padding: 20px;
-        border-radius: 8px;
-        margin: 20px 0;
-    }
-
-    .demo-info ul {
-        margin: 10px 0;
-        padding-left: 20px;
-    }
-
-    .demo-info li {
-        margin: 5px 0;
-    }
-
-    .window-content {
-        padding: 0;
-    }
-
-    .window-content h3 {
-        margin-top: 0;
-        color: #374151;
-    }
-
-    .window-content p {
-        margin: 10px 0;
-        line-height: 1.6;
-    }
-
-    .window-content button {
-        padding: 8px 16px;
-        background: #667eea;
-        color: white;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        margin: 5px 5px 5px 0;
-    }
-
-    .window-content button:hover {
-        background: #5a67d8;
-    }
-
-    .custom-content {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 15px;
-        margin: 15px 0;
-    }
-
-    .card {
-        background: #f8f9fa;
-        padding: 15px;
-        border-radius: 6px;
-        border: 1px solid #e9ecef;
-    }
-
-    .card h4 {
-        margin-top: 0;
-        color: #495057;
-    }
-
-    .centered-controls {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-    }
-
-    .dark-content {
-        margin: 15px 0;
-    }
-
-    .dark-card {
-        background: #374151;
-        padding: 15px;
-        border-radius: 6px;
-        border: 1px solid #4b5563;
-        color: #f9fafb;
-    }
-
-    .dark-card h4 {
-        margin-top: 0;
-        color: #e5e7eb;
-    }
-
-    .centered-controls button {
-        flex: 1;
-        font-size: 12px;
-    }
-</style>

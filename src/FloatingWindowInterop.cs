@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using Soenneker.Blazor.Floating.Windows.Abstract;
+using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
 using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
 using Soenneker.Extensions.ValueTask;
@@ -111,9 +112,9 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         return _jSRuntime.InvokeVoidAsync($"{_moduleName}.setPosition", cancellationToken, id, x, y);
     }
 
-    public ValueTask<(int width, int height)> GetSize(string id, CancellationToken cancellationToken = default)
+    public ValueTask<FloatingWindowSize> GetSize(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<(int width, int height)>($"{_moduleName}.getSize", cancellationToken, id);
+        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getSize", cancellationToken, id);
     }
 
     public ValueTask SetSize(string id, int width, int height, CancellationToken cancellationToken = default)
@@ -126,9 +127,14 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         return _jSRuntime.InvokeVoidAsync($"{_moduleName}.bringToFront", cancellationToken, id);
     }
 
-    public ValueTask<(int width, int height)> GetViewportSize(CancellationToken cancellationToken = default)
+    public ValueTask<FloatingWindowSize> GetViewportSize(CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<(int width, int height)>($"{_moduleName}.getViewportSize", cancellationToken);
+        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getViewportSize", cancellationToken);
+    }
+
+    public ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default)
+    {
+        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.centerInViewport", cancellationToken, id);
     }
 
     public async ValueTask DisposeAsync()

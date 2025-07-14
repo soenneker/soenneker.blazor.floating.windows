@@ -1,8 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
+﻿using Microsoft.AspNetCore.Components;
+using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Soenneker.Blazor.Floating.Windows.Abstract;
 
@@ -107,42 +109,58 @@ public interface IFloatingWindow : IAsyncDisposable
     bool? UseCdn { get; set; }
 
     /// <summary>
+    /// Override: Whether the window should automatically resize to fit its content (overrides width/height if true).
+    /// </summary>
+    bool? AutoSizeToContent { get; set; }
+
+    /// <summary>
+    /// Override: Whether the window should dynamically resize to fit its content as it changes.
+    /// </summary>
+    bool? DynamicAutoSizeToContent { get; set; }
+
+    /// <summary>
     /// Shows the window.
     /// </summary>
-    ValueTask Show();
+    ValueTask Show(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Hides the window.
     /// </summary>
-    ValueTask Hide();
+    ValueTask Hide(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Toggles the window visibility.
     /// </summary>
-    ValueTask Toggle();
+    ValueTask Toggle(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Closes the window (hides and disposes).
     /// </summary>
-    ValueTask Close();
+    ValueTask Close(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the current position of the window.
     /// </summary>
-    ValueTask<(int x, int y)> GetPosition();
+    ValueTask<(int x, int y)> GetPosition(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the position of the window.
     /// </summary>
-    ValueTask SetPosition(int x, int y);
+    ValueTask SetPosition(int x, int y, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the current size of the window.
     /// </summary>
-    ValueTask<(int width, int height)> GetSize();
+    /// <returns>A WindowSize object containing the width and height.</returns>
+    ValueTask<FloatingWindowSize> GetSize(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the size of the window.
     /// </summary>
-    ValueTask SetSize(int width, int height);
+    ValueTask SetSize(int width, int height, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Centers the window in the viewport, accounting for its width and height.
+    /// </summary>
+    ValueTask Center(CancellationToken cancellationToken = default);
 }

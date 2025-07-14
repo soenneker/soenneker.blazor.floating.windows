@@ -6,8 +6,11 @@
 @using Soenneker.Extensions.Task
 @using Soenneker.Extensions.ValueTask
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Logging
+@using Soenneker.Blazor.Floating.Windows.Dtos
 
 @inject IFloatingWindowInterop WindowInterop
+@inject ILogger<FloatingWindow> Logger
 
 @implements IFloatingWindow
 
@@ -107,6 +110,15 @@
     [Parameter]
     public FloatingWindowStyleOptions? StyleOptions { get; set; }
 
+    [Parameter]
+    public bool? AutoSizeToContent { get; set; }
+
+    [Parameter]
+    public bool? DynamicAutoSizeToContent { get; set; }
+
+    [Parameter]
+    public bool? RecenterOnResize { get; set; }
+
     private FloatingWindowOptions MergedOptions => new()
     {
         Draggable = Draggable ?? Options.Draggable,
@@ -128,7 +140,10 @@
         FocusOnShow = Options.FocusOnShow,
         UseCdn = UseCdn ?? Options.UseCdn,
         ZIndex = Options.ZIndex,
-        StyleOptions = StyleOptions ?? Options.StyleOptions
+        StyleOptions = StyleOptions ?? Options.StyleOptions,
+        AutoSizeToContent = AutoSizeToContent ?? Options.AutoSizeToContent,
+        DynamicAutoSizeToContent = DynamicAutoSizeToContent ?? Options.DynamicAutoSizeToContent,
+        RecenterOnResize = RecenterOnResize ?? Options.RecenterOnResize
     };
 
     private bool _initialized;
@@ -162,6 +177,15 @@
         await OnDragEnd.InvokeIfHasDelegate().NoSync();
     }
 
+    [JSInvokable]
+    public async Task OnContentResized()
+    {
+        if (MergedOptions.RecenterOnResize)
+        {
+            await Center();
+        }
+    }
+
     private async Task OnTitleBarMouseDown()
     {
         if (MergedOptions.Draggable)
@@ -172,12 +196,34 @@
 
     private async Task OnCloseClick()
     {
-        await Close();
+        await Hide();
     }
 
     private async Task OnResizeMouseDown()
     {
         await WindowInterop.BringToFront(ElementId, _disposeCts.Token);
+    }
+
+    /// <summary>
+    /// Centers the window in the viewport, accounting for its width and height.
+    /// </summary>
+    public async ValueTask Center(CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            FloatingWindowSize windowSize = await WindowInterop.GetSize(ElementId, _disposeCts.Token).NoSync();
+            FloatingWindowSize viewportSize = await WindowInterop.GetViewportSize(_disposeCts.Token).NoSync();
+
+            int x = (viewportSize.Width - windowSize.Width) / 2;
+            int y = (viewportSize.Height - windowSize.Height) / 2;
+
+            await WindowInterop.SetPosition(ElementId, x, y, _disposeCts.Token).NoSync();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error centering window");
+            // Fallback to default positioning
+        }
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -189,123 +235,118 @@
 
             // Wait a bit to ensure the element is in the DOM
             await Task.Delay(10, _disposeCts.Token);
-            
+
             await WindowInterop.Create(ElementId, MergedOptions, _disposeCts.Token).NoSync();
             await WindowInterop.SetCallbacks(ElementId, _dotNetRef!).NoSync();
 
             // Set initialized after everything is done
             _initialized = true;
             StateHasChanged();
-
-            if (MergedOptions.CenterOnShow)
-            {
-                await CenterWindow();
-            }
         }
     }
 
-    private async Task CenterWindow()
+    public async ValueTask Show(CancellationToken cancellationToken = default)
     {
-        try
-        {
-            (int width, int height) windowSize = await WindowInterop.GetSize(ElementId, _disposeCts.Token);
-            (int width, int height) viewportSize = await WindowInterop.GetViewportSize(_disposeCts.Token);
-
-            int x = (viewportSize.width - windowSize.width) / 2;
-            int y = (viewportSize.height - windowSize.height) / 2;
-
-            await WindowInterop.SetPosition(ElementId, x, y, _disposeCts.Token);
-        }
-        catch
-        {
-            // Fallback to default positioning
-        }
-    }
-
-    public async ValueTask Show()
-    {
-        Console.WriteLine($"Show() called for window {ElementId}, initialized: {_initialized}");
         if (_initialized)
         {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
             try
             {
-                await WindowInterop.Show(ElementId, _disposeCts.Token);
+                if (MergedOptions.CenterOnShow)
+                {
+                    await WindowInterop.CenterInViewport(ElementId, linkedCts.Token);
+                }
+                await WindowInterop.Show(ElementId, linkedCts.Token).NoSync();
                 _visible = true;
                 StateHasChanged();
-                Console.WriteLine($"Window {ElementId} shown successfully");
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error showing window {ElementId}: {ex.Message}");
+                Logger.LogError("Error showing window {S}: {ExMessage}", ElementId, ex.Message);
             }
         }
         else
         {
-            Console.WriteLine($"Window {ElementId} not initialized yet");
+            Logger.LogWarning("Window {S} not initialized yet", ElementId);
         }
     }
 
-    public async ValueTask Hide()
+    public async ValueTask Hide(CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await WindowInterop.Hide(ElementId, _disposeCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+            await WindowInterop.Hide(ElementId, linkedCts.Token).NoSync();
             _visible = false;
         }
     }
 
-    public async ValueTask Toggle()
+    public async ValueTask Toggle(CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await WindowInterop.Toggle(ElementId, _disposeCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+            await WindowInterop.Toggle(ElementId, linkedCts.Token).NoSync();
             _visible = !_visible;
         }
     }
 
-    public async ValueTask Close()
+    public async ValueTask Close(CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await WindowInterop.Close(ElementId, _disposeCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+            await WindowInterop.Close(ElementId, linkedCts.Token).NoSync();
             _visible = false;
         }
     }
 
-    public async ValueTask<(int x, int y)> GetPosition()
+    public async ValueTask<(int x, int y)> GetPosition(CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            return await WindowInterop.GetPosition(ElementId, _disposeCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+            return await WindowInterop.GetPosition(ElementId, linkedCts.Token).NoSync();
         }
 
         return (0, 0);
     }
 
-    public async ValueTask SetPosition(int x, int y)
+    public async ValueTask SetPosition(int x, int y, CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await WindowInterop.SetPosition(ElementId, x, y, _disposeCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+            await WindowInterop.SetPosition(ElementId, x, y, linkedCts.Token);
+        }
+
+    }
+
+    public async ValueTask<FloatingWindowSize> GetSize(CancellationToken cancellationToken = default)
+    {
+        if (_initialized)
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+            return await WindowInterop.GetSize(ElementId, linkedCts.Token).NoSync();
+        }
+
+        return new FloatingWindowSize { Width = 0, Height = 0 };
+    }
+
+    public async ValueTask SetSize(int width, int height, CancellationToken cancellationToken = default)
+    {
+        if (_initialized)
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+            await WindowInterop.SetSize(ElementId, width, height, linkedCts.Token);
         }
     }
 
-    public async ValueTask<(int width, int height)> GetSize()
-    {
-        if (_initialized)
-        {
-            return await WindowInterop.GetSize(ElementId, _disposeCts.Token);
-        }
 
-        return (0, 0);
-    }
-
-    public async ValueTask SetSize(int width, int height)
+    public async ValueTask Destroy(CancellationToken cancellationToken = default)
     {
-        if (_initialized)
-        {
-            await WindowInterop.SetSize(ElementId, width, height, _disposeCts.Token);
-        }
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+        await WindowInterop.Destroy(ElementId, linkedCts.Token);
     }
 
     private string GetWindowStyles()
@@ -333,7 +374,7 @@
         // Add custom styles if provided
         if (MergedOptions.StyleOptions.CustomStyles != null)
         {
-            foreach (var customStyle in MergedOptions.StyleOptions.CustomStyles)
+            foreach (KeyValuePair<string, string> customStyle in MergedOptions.StyleOptions.CustomStyles)
             {
                 styles.Add($"{customStyle.Key}: {customStyle.Value}");
             }
@@ -399,7 +440,7 @@
         GC.SuppressFinalize(this);
 
         await _disposeCts.CancelAsync().NoSync();
-        await WindowInterop.Destroy(ElementId, CancellationToken.None);
+        await WindowInterop.Destroy(ElementId, CancellationToken.None).NoSync();
 
         _dotNetRef?.Dispose();
         _disposeCts.Dispose();
