@@ -3,61 +3,121 @@
 namespace Soenneker.Blazor.Floating.Windows.Options;
 
 /// <summary>
-/// Options for configuring a floating Window.
+/// Options for configuring a floating window.
 /// </summary>
 public class FloatingWindowOptions
 {
     /// <summary>
-    /// Whether the Window should animate on show/hide.
+    /// Whether the window is draggable by its title bar.
     /// </summary>
-    [JsonPropertyName("animate")]
-    public bool Animate { get; set; } = true;
+    [JsonPropertyName("draggable")]
+    public bool Draggable { get; set; } = true;
 
     /// <summary>
-    /// Delay in milliseconds before showing the Window (if not manually triggered).
+    /// Whether the window is resizable by dragging its edges.
     /// </summary>
-    [JsonPropertyName("showDelay")]
-    public int ShowDelay { get; set; }
+    [JsonPropertyName("resizable")]
+    public bool Resizable { get; set; } = true;
 
     /// <summary>
-    /// Delay in milliseconds before hiding the Window (if not manually triggered).
+    /// Whether the window has a close button in the title bar.
     /// </summary>
-    [JsonPropertyName("hideDelay")]
-    public int HideDelay { get; set; }
+    [JsonPropertyName("showCloseButton")]
+    public bool ShowCloseButton { get; set; } = true;
 
     /// <summary>
-    /// Whether to render the arrow pointing to the reference element.
+    /// Whether the window has a title bar.
     /// </summary>
-    [JsonPropertyName("showArrow")]
-    public bool ShowArrow { get; set; } = true;
+    [JsonPropertyName("showTitleBar")]
+    public bool ShowTitleBar { get; set; } = true;
 
     /// <summary>
-    /// Whether the Window can receive pointer events (e.g. buttons/links inside).
+    /// The title text for the window.
     /// </summary>
-    [JsonPropertyName("interactive")]
-    public bool Interactive { get; set; } = false;
+    [JsonPropertyName("title")]
+    public string? Title { get; set; }
 
     /// <summary>
-    /// Whether this Window is enabled. If false, nothing is shown.
+    /// Whether this window is enabled. If false, nothing is shown.
     /// </summary>
     [JsonPropertyName("enabled")]
     public bool Enabled { get; set; } = true;
 
     /// <summary>
-    /// Optional maximum width (in pixels) of the Window.
+    /// Initial width of the window in pixels.
+    /// </summary>
+    [JsonPropertyName("width")]
+    public int? Width { get; set; } = 400;
+
+    /// <summary>
+    /// Initial height of the window in pixels.
+    /// </summary>
+    [JsonPropertyName("height")]
+    public int? Height { get; set; } = 300;
+
+    /// <summary>
+    /// Initial X position of the window.
+    /// </summary>
+    [JsonPropertyName("initialX")]
+    public int? InitialX { get; set; } = 100;
+
+    /// <summary>
+    /// Initial Y position of the window.
+    /// </summary>
+    [JsonPropertyName("initialY")]
+    public int? InitialY { get; set; } = 100;
+
+    /// <summary>
+    /// Minimum width the window can be resized to.
+    /// </summary>
+    [JsonPropertyName("minWidth")]
+    public int MinWidth { get; set; } = 200;
+
+    /// <summary>
+    /// Minimum height the window can be resized to.
+    /// </summary>
+    [JsonPropertyName("minHeight")]
+    public int MinHeight { get; set; } = 150;
+
+    /// <summary>
+    /// Maximum width the window can be resized to.
     /// </summary>
     [JsonPropertyName("maxWidth")]
     public int? MaxWidth { get; set; }
 
     /// <summary>
-    /// If true, Window will only show or hide when triggered manually via C#.
+    /// Maximum height the window can be resized to.
     /// </summary>
-    [JsonPropertyName("manualTrigger")]
-    public bool ManualTrigger { get; set; } = false;
+    [JsonPropertyName("maxHeight")]
+    public int? MaxHeight { get; set; }
 
     /// <summary>
-    /// If true, resources like scripts and styles are loaded from CDN.
+    /// Whether the window should be constrained to the viewport bounds.
+    /// </summary>
+    [JsonPropertyName("constrainToViewport")]
+    public bool ConstrainToViewport { get; set; } = true;
+
+    /// <summary>
+    /// Whether the window should be centered on screen when first shown.
+    /// </summary>
+    [JsonPropertyName("centerOnShow")]
+    public bool CenterOnShow { get; set; } = false;
+
+    /// <summary>
+    /// Whether the window should be focused when shown.
+    /// </summary>
+    [JsonPropertyName("focusOnShow")]
+    public bool FocusOnShow { get; set; } = true;
+
+    /// <summary>
+    /// Whether resources like scripts and styles are loaded from CDN.
     /// </summary>
     [JsonPropertyName("useCdn")]
     public bool UseCdn { get; set; } = true;
+
+    /// <summary>
+    /// Z-index for the window. Higher values appear on top.
+    /// </summary>
+    [JsonPropertyName("zIndex")]
+    public int ZIndex { get; set; } = 1000;
 }

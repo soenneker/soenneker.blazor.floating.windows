@@ -1,5 +1,4 @@
-﻿using Soenneker.Blazor.Floating.Windows.Abstract;
-using Soenneker.Tests.FixturedUnit;
+﻿using Soenneker.Tests.FixturedUnit;
 using Xunit;
 
 namespace Soenneker.Blazor.Floating.Windows.Tests;
@@ -14,6 +13,5 @@ public sealed class FloatingWindowTests : FixturedUnitTest
     [Fact]
     public void Default()
     {
-
     }
 }

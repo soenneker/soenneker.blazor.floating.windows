@@ -1,290 +1,382 @@
 ﻿export class FloatingWindowInterop {
     constructor() {
-        this.cleanups = new Map();
-        this.debug = false;
-        this._timeouts = new Map();
+        this.windows = new Map();
+        this.activeWindow = null;
+        this.nextZIndex = 1000;
     }
 
     async create(id, optionsJson) {
         const options = JSON.parse(optionsJson);
-        options.placement ||= "top";
 
-        const anchorId = "anchor-" + id;
-        const tooltipId = "tooltip-" + id;
-
-        const anchor = document.getElementById(anchorId);
-        let reference = anchor.querySelector("[data-tooltip-anchor]") ?? anchor.firstElementChild;
-
-        if (!reference) {
-            // Fallback to anchor itself and ensure it has a layout box
-            reference = anchor;
-            anchor.style.display = "inline-block";
-        }
-
-        const tooltip = document.getElementById(tooltipId);
-
-        if (!reference || !tooltip) {
-            console.warn('Reference or tooltip element not found.', { anchorId, tooltipId });
-            return;
-        }
+        const window = document.getElementById(id);
 
         if (!options?.enabled) {
-            tooltip.style.display = 'none';
+            window.style.display = 'none';
             return;
         }
 
-        tooltip.classList.add("floating-tooltip");
-
-        if (options.theme)
-            tooltip.classList.add(`floating-tooltip--theme-${options.theme}`);
-
-        if (options.animate)
-            tooltip.classList.add("fade");
-
-        if (options.interactive)
-            tooltip.classList.add("interactive");
-
-        if (options.maxWidth && options.maxWidth > 0) {
-            const textEl = tooltip.querySelector(".tooltip-text");
-
-            if (textEl && options.maxWidth && options.maxWidth > 0) {
-                textEl.style.maxWidth = `${options.maxWidth}px`;
-            }
+        // Set initial styles
+        window.style.position = 'fixed';
+        window.style.zIndex = options.zIndex || this.nextZIndex++;
+        
+        if (options.width) {
+            window.style.width = `${options.width}px`;
+        }
+        if (options.height) {
+            window.style.height = `${options.height}px`;
+        }
+        if (options.initialX !== undefined) {
+            window.style.left = `${options.initialX}px`;
+        }
+        if (options.initialY !== undefined) {
+            window.style.top = `${options.initialY}px`;
         }
 
-        tooltip.dataset.placement = options.placement;
-
-        if (options.showArrow && !tooltip.querySelector(".floating-tooltip-arrow")) {
-            const arrow = document.createElement("div");
-            arrow.classList.add("floating-tooltip-arrow");
-            tooltip.appendChild(arrow);
-        }
-
-        const arrowEl = tooltip.querySelector(".floating-tooltip-arrow");
-
-        let cleanup;
-
-        const showTooltip = async () => {
-            if (!options.enabled) return;
-            clearTimeout(this._timeouts.get(`hide-${id}`));
-
-            const showDelay = options.showDelay || 0;
-            const showTimeout = setTimeout(() => {
-                tooltip.classList.add("visible");
-
-                cleanup = window.FloatingUIDOM.autoUpdate(reference, tooltip, async () => {
-                    try {
-                        const {
-                            x, y,
-                            middlewareData,
-                            placement: resolvedPlacement
-                        } = await window.FloatingUIDOM.computePosition(reference, tooltip, {
-                            placement: options.placement,
-                            middleware: [
-                                window.FloatingUIDOM.offset(10),
-                                window.FloatingUIDOM.flip(),
-                                window.FloatingUIDOM.shift({ padding: 5 }),
-                                ...(arrowEl ? [window.FloatingUIDOM.arrow({ element: arrowEl })] : [])
-                            ]
-                        });
-
-                        Object.assign(tooltip.style, {
-                            position: 'absolute',
-                            left: `${x}px`,
-                            top: `${y}px`
-                        });
-
-                        const [basePlacement, alignment = "center"] = resolvedPlacement.split("-");
-
-                        tooltip.classList.remove("tooltip-align-start", "tooltip-align-end", "tooltip-align-center");
-                        tooltip.classList.add(`tooltip-align-${alignment}`);
-
-                        if (arrowEl && middlewareData?.arrow) {
-                            const { x: ax, y: ay } = middlewareData.arrow;
-
-                            arrowEl.style.left = '';
-                            arrowEl.style.right = '';
-                            arrowEl.style.top = '';
-                            arrowEl.style.bottom = '';
-                            arrowEl.style.marginLeft = '';
-                            arrowEl.style.marginRight = '';
-
-                            if (basePlacement === "top" || basePlacement === "bottom") {
-                                arrowEl.style.left = ax != null ? `${ax}px` : '';
-                            } else {
-                                arrowEl.style.top = ay != null ? `${ay}px` : '';
-                            }
-
-                            const staticSide = {
-                                top: 'bottom',
-                                right: 'left',
-                                bottom: 'top',
-                                left: 'right'
-                            }[basePlacement];
-
-                            arrowEl.style[staticSide] = '-4px';
-                        }
-                    } catch (e) {
-                        console.error("computePosition error", e);
-                    }
-                });
-            }, showDelay);
-
-            this._timeouts.set(`show-${id}`, showTimeout);
-        };
-
-        const hideTooltip = () => {
-            clearTimeout(this._timeouts.get(`show-${id}`));
-
-            const hideDelay = options.hideDelay || 0;
-            const hideTimeout = setTimeout(() => {
-                tooltip.classList.remove("visible");
-                if (cleanup) {
-                    cleanup();
-                    cleanup = null;
-                }
-            }, hideDelay);
-
-            this._timeouts.set(`hide-${id}`, hideTimeout);
-        };
-
-        if (!options.manualTrigger) {
-            const onEnter = showTooltip;
-
-            const onLeave = () => {
-                if (options.interactive && tooltip) {
-                    setTimeout(() => {
-                        const stillHovered = tooltip.matches(':hover');
-                        if (stillHovered) {
-                            const leaveFromTooltip = (evt) => {
-                                if (!anchor.contains(evt.relatedTarget)) {
-                                    hideTooltip();
-                                }
-                            };
-                            tooltip.addEventListener("mouseleave", leaveFromTooltip, { once: true });
-                        } else {
-                            hideTooltip();
-                        }
-                    }, 100);
-                    return;
-                }
-
-                hideTooltip();
-            };
-
-            reference.addEventListener('mouseenter', onEnter);
-            reference.addEventListener('mouseleave', onLeave);
-
-            this.cleanups.set(anchorId, () => {
-                reference.removeEventListener('mouseenter', onEnter);
-                reference.removeEventListener('mouseleave', onLeave);
-                clearTimeout(this._timeouts.get(`show-${id}`));
-                clearTimeout(this._timeouts.get(`hide-${id}`));
-                if (cleanup) {
-                    cleanup();
-                    cleanup = null;
-                }
-            });
-        } else {
-            this.cleanups.set(anchorId, () => {
-                clearTimeout(this._timeouts.get(`show-${id}`));
-                clearTimeout(this._timeouts.get(`hide-${id}`));
-                if (cleanup) {
-                    cleanup();
-                    cleanup = null;
-                }
-            });
-        }
-
-        this[`__handlers_${id}`] = {
-            showTooltip,
-            hideTooltip
-        };
-
-        this.createObserver(anchorId);
-    }
-
-    createObserver(elementId) {
-        const target = document.getElementById(elementId);
-        if (!target || !target.parentNode || !this.cleanups.has(elementId)) return;
-
-        const observer = new MutationObserver((mutations) => {
-            const targetRemoved = mutations.some(mutation =>
-                Array.from(mutation.removedNodes).includes(target)
-            );
-
-            if (targetRemoved) {
-                this.dispose(elementId);
-                observer.disconnect();
-            }
+        // Store window data
+        this.windows.set(id, {
+            element: window,
+            options: options,
+            isDragging: false,
+            isResizing: false,
+            dragStart: { x: 0, y: 0 },
+            resizeStart: { width: 0, height: 0, x: 0, y: 0 },
+            resizeDirection: null
         });
 
-        observer.observe(target.parentNode, { childList: true });
+        // Setup dragging
+        if (options.draggable) {
+            this.setupDragging(id);
+        }
+
+        // Setup resizing
+        if (options.resizable) {
+            this.setupResizing(id);
+        }
+
+        // Setup close button
+        const closeButton = window.querySelector('.floating-window-close');
+        if (closeButton) {
+            closeButton.addEventListener('click', () => {
+                this.close(id);
+            });
+        }
+
+        // Don't show the window automatically - let the Show() method handle it
+        window.style.display = 'none';
+    }
+
+    setupDragging(id) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        const titleBar = windowData.element.querySelector('.floating-window-titlebar');
+        if (!titleBar) return;
+
+        const onMouseDown = (e) => {
+            e.preventDefault();
+            this.startDragging(id, e);
+        };
+
+        titleBar.addEventListener('mousedown', onMouseDown);
+        titleBar.style.cursor = 'move';
+
+        // Store cleanup function
+        windowData.cleanupDragging = () => {
+            titleBar.removeEventListener('mousedown', onMouseDown);
+        };
+    }
+
+    setupResizing(id) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        const resizeHandles = windowData.element.querySelectorAll('.floating-window-resize-handle');
+        
+        resizeHandles.forEach(handle => {
+            const direction = handle.dataset.direction;
+            const onMouseDown = (e) => {
+                e.preventDefault();
+                this.startResizing(id, e, direction);
+            };
+
+            handle.addEventListener('mousedown', onMouseDown);
+            
+            // Store cleanup function
+            if (!windowData.cleanupResizing) {
+                windowData.cleanupResizing = [];
+            }
+            windowData.cleanupResizing.push(() => {
+                handle.removeEventListener('mousedown', onMouseDown);
+            });
+        });
+    }
+
+    startDragging(id, e) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        windowData.isDragging = true;
+        windowData.dragStart = {
+            x: e.clientX - windowData.element.offsetLeft,
+            y: e.clientY - windowData.element.offsetTop
+        };
+
+        this.bringToFront(id);
+        this.activeWindow = id;
+
+        const onMouseMove = (e) => {
+            if (!windowData.isDragging) return;
+            this.updateDragPosition(id, e);
+        };
+
+        const onMouseUp = () => {
+            windowData.isDragging = false;
+            this.activeWindow = null;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
+    updateDragPosition(id, e) {
+        const windowData = this.windows.get(id);
+        if (!windowData || !windowData.isDragging) return;
+
+        let newX = e.clientX - windowData.dragStart.x;
+        let newY = e.clientY - windowData.dragStart.y;
+
+        // Constrain to viewport if enabled
+        if (windowData.options.constrainToViewport) {
+            const rect = windowData.element.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            newX = Math.max(0, Math.min(newX, viewportWidth - rect.width));
+            newY = Math.max(0, Math.min(newY, viewportHeight - rect.height));
+        }
+
+        windowData.element.style.left = `${newX}px`;
+        windowData.element.style.top = `${newY}px`;
+    }
+
+    startResizing(id, e, direction) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        windowData.isResizing = true;
+        windowData.resizeDirection = direction;
+        windowData.resizeStart = {
+            width: windowData.element.offsetWidth,
+            height: windowData.element.offsetHeight,
+            x: e.clientX,
+            y: e.clientY
+        };
+
+        this.bringToFront(id);
+        this.activeWindow = id;
+
+        const onMouseMove = (e) => {
+            if (!windowData.isResizing) return;
+            this.updateResizePosition(id, e);
+        };
+
+        const onMouseUp = () => {
+            windowData.isResizing = false;
+            windowData.resizeDirection = null;
+            this.activeWindow = null;
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+        };
+
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('mouseup', onMouseUp);
+    }
+
+    updateResizePosition(id, e) {
+        const windowData = this.windows.get(id);
+        if (!windowData || !windowData.isResizing) return;
+
+        const deltaX = e.clientX - windowData.resizeStart.x;
+        const deltaY = e.clientY - windowData.resizeStart.y;
+        const direction = windowData.resizeDirection;
+
+        let newWidth = windowData.resizeStart.width;
+        let newHeight = windowData.resizeStart.height;
+        let newX = parseInt(windowData.element.style.left) || 0;
+        let newY = parseInt(windowData.element.style.top) || 0;
+
+        // Calculate new dimensions based on resize direction
+        if (direction.includes('e')) {
+            newWidth = Math.max(windowData.options.minWidth, windowData.resizeStart.width + deltaX);
+            if (windowData.options.maxWidth) {
+                newWidth = Math.min(windowData.options.maxWidth, newWidth);
+            }
+        }
+        if (direction.includes('w')) {
+            const widthChange = Math.min(deltaX, windowData.resizeStart.width - windowData.options.minWidth);
+            newWidth = windowData.resizeStart.width - widthChange;
+            newX = (parseInt(windowData.element.style.left) || 0) + widthChange;
+        }
+        if (direction.includes('s')) {
+            newHeight = Math.max(windowData.options.minHeight, windowData.resizeStart.height + deltaY);
+            if (windowData.options.maxHeight) {
+                newHeight = Math.min(windowData.options.maxHeight, newHeight);
+            }
+        }
+        if (direction.includes('n')) {
+            const heightChange = Math.min(deltaY, windowData.resizeStart.height - windowData.options.minHeight);
+            newHeight = windowData.resizeStart.height - heightChange;
+            newY = (parseInt(windowData.element.style.top) || 0) + heightChange;
+        }
+
+        // Constrain to viewport if enabled
+        if (windowData.options.constrainToViewport) {
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+
+            if (newX + newWidth > viewportWidth) {
+                newWidth = viewportWidth - newX;
+            }
+            if (newY + newHeight > viewportHeight) {
+                newHeight = viewportHeight - newY;
+            }
+            if (newX < 0) {
+                newWidth += newX;
+                newX = 0;
+            }
+            if (newY < 0) {
+                newHeight += newY;
+                newY = 0;
+            }
+        }
+
+        // Apply new dimensions
+        windowData.element.style.width = `${newWidth}px`;
+        windowData.element.style.height = `${newHeight}px`;
+        windowData.element.style.left = `${newX}px`;
+        windowData.element.style.top = `${newY}px`;
     }
 
     setCallbacks(id, dotNetRef) {
-        const anchorId = "anchor-" + id;
-        const anchor = document.getElementById(anchorId);
-        if (!anchor) return;
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
 
-        anchor.addEventListener("mouseenter", () => {
-            dotNetRef.invokeMethodAsync("InvokeOnShow").catch(console.error);
-        });
-
-        anchor.addEventListener("mouseleave", () => {
-            dotNetRef.invokeMethodAsync("InvokeOnHide").catch(console.error);
-        });
-    }
-
-    dispose(id) {
-        const anchorId = "anchor-" + id;
-
-        const cleanupFn = this.cleanups.get(anchorId);
-        if (cleanupFn) {
-            cleanupFn();
-            this.cleanups.delete(anchorId);
-        }
-
-        clearTimeout(this._timeouts.get(`show-${id}`));
-        clearTimeout(this._timeouts.get(`hide-${id}`));
-        this._timeouts.delete(`show-${id}`);
-        this._timeouts.delete(`hide-${id}`);
-
-        delete this[`__handlers_${id}`];
+        windowData.dotNetRef = dotNetRef;
     }
 
     show(id) {
-        const handlers = this[`__handlers_${id}`];
-        if (handlers?.showTooltip) {
-            handlers.showTooltip();
-        } else {
-            console.warn(`No showTooltip found for tooltip ID: ${id}`);
+        console.log('FloatingWindowInterop.show called with:', { id });
+        const windowData = this.windows.get(id);
+        if (!windowData) {
+            console.warn('Window data not found for id:', id);
+            return;
+        }
+
+        console.log('Showing window:', windowData.element);
+        windowData.element.style.display = 'block';
+        windowData.element.classList.add('visible');
+        if (windowData.dotNetRef) {
+            windowData.dotNetRef.invokeMethodAsync("InvokeOnShow").catch(console.error);
         }
     }
 
     hide(id) {
-        const handlers = this[`__handlers_${id}`];
-        if (handlers?.hideTooltip) {
-            handlers.hideTooltip();
-        } else {
-            console.warn(`No hideTooltip found for tooltip ID: ${id}`);
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        windowData.element.style.display = 'none';
+        windowData.element.classList.remove('visible');
+        if (windowData.dotNetRef) {
+            windowData.dotNetRef.invokeMethodAsync("InvokeOnHide").catch(console.error);
         }
     }
 
     toggle(id) {
-        const tooltipId = "tooltip-" + id;
-        const tooltip = document.getElementById(tooltipId);
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
 
-        if (!tooltip) {
-            console.warn(`Tooltip element not found for ID: ${id}`);
-            return;
-        }
-
-        if (tooltip.classList.contains("visible")) {
-            this.hide(id);
-        } else {
+        if (windowData.element.style.display === 'none') {
             this.show(id);
+        } else {
+            this.hide(id);
         }
+    }
+
+    close(id) {
+        this.hide(id);
+        this.destroy(id);
+    }
+
+    destroy(id) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        // Cleanup event listeners
+        if (windowData.cleanupDragging) {
+            windowData.cleanupDragging();
+        }
+        if (windowData.cleanupResizing) {
+            windowData.cleanupResizing.forEach(cleanup => cleanup());
+        }
+
+        // Remove from DOM
+        if (windowData.element.parentNode) {
+            windowData.element.parentNode.removeChild(windowData.element);
+        }
+
+        this.windows.delete(id);
+    }
+
+    getPosition(id) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return { x: 0, y: 0 };
+
+        return {
+            x: parseInt(windowData.element.style.left) || 0,
+            y: parseInt(windowData.element.style.top) || 0
+        };
+    }
+
+    setPosition(id, x, y) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        windowData.element.style.left = `${x}px`;
+        windowData.element.style.top = `${y}px`;
+    }
+
+    getSize(id) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return { width: 0, height: 0 };
+
+        return {
+            width: windowData.element.offsetWidth,
+            height: windowData.element.offsetHeight
+        };
+    }
+
+    setSize(id, width, height) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        windowData.element.style.width = `${width}px`;
+        windowData.element.style.height = `${height}px`;
+    }
+
+    bringToFront(id) {
+        const windowData = this.windows.get(id);
+        if (!windowData) return;
+
+        windowData.element.style.zIndex = this.nextZIndex++;
+    }
+
+    getViewportSize() {
+        return {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
     }
 }
 

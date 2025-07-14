@@ -1,18 +1,256 @@
 ﻿@page "/"
 @using Microsoft.Extensions.Logging
+@using Soenneker.Blazor.Floating.Windows
 
 @inject ILogger<Index> Logger
 
-<img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" />
-<h1>Soenneker.Blazor.Floating.Windows demo</h1>
-<p>This page demonstrates some of the common usages for the interop library.</p>
-<br />
+<div class="demo-container" >
+    <h1>Soenneker.Blazor.Floating.Windows Demo</h1>
+    <p>This page demonstrates the floating window component with drag, resize, and positioning capabilities.</p>
 
-<hr />
+    <div class="demo-controls" >
+        <button @onclick="ShowBasicWindow" class="demo-button" >Show Basic Window</button>
+        <button @onclick="ShowCustomWindow" class="demo-button" >Show Custom Window</button>
+        <button @onclick="ShowCenteredWindow" class="demo-button" >Show Centered Window</button>
+        <button @onclick="ShowAllWindows" class="demo-button" >Show All Windows</button>
+        <button @onclick="HideAllWindows" class="demo-button" >Hide All Windows</button>
+    </div>
 
-@code{
+    <div class="demo-info" >
+        <h3>Features:</h3>
+        <ul>
+            <li>✅ Draggable windows (drag by title bar)</li>
+            <li>✅ Resizable windows (drag edges/corners)</li>
+            <li>✅ Close button</li>
+            <li>✅ Customizable title</li>
+            <li>✅ Viewport constraints</li>
+            <li>✅ Z-index management</li>
+            <li>✅ Responsive design</li>
+            <li>✅ Dark mode support</li>
+        </ul>
+    </div>
+</div>
 
-    protected override void OnInitialized()
+<!-- Basic Window -->
+<FloatingWindow @ref="basicWindow"
+                Title="Basic Window"
+                Width="400"
+                Height="300"
+                InitialX="50"
+                InitialY="50"
+                OnShow="OnWindowShow"
+                OnHide="OnWindowHide"
+                OnDragStart="OnDragStart"
+                OnDragEnd="OnDragEnd" >
+    <div class="window-content" >
+        <h3>Basic Floating Window</h3>
+        <p>This is a basic floating window that you can drag around and resize.</p>
+        <p>Try dragging the title bar to move it, or drag the edges to resize it.</p>
+        <button @onclick="() => basicWindow?.Hide()" >Hide Window</button>
+    </div>
+</FloatingWindow>
+
+<!-- Custom Window -->
+<FloatingWindow @ref="customWindow"
+                Title="Custom Styled Window"
+                Width="500"
+                Height="400"
+                InitialX="200"
+                InitialY="100"
+                ShowCloseButton="true"
+                Draggable="true"
+                Resizable="true" >
+    <div class="window-content" >
+        <h3>Custom Styled Window</h3>
+        <p>This window has custom styling and larger dimensions.</p>
+        <div class="custom-content" >
+            <div class="card" >
+                <h4>Card 1</h4>
+                <p>This is some content in a card.</p>
+            </div>
+            <div class="card" >
+                <h4>Card 2</h4>
+                <p>Another card with different content.</p>
+            </div>
+        </div>
+        <button @onclick="() => customWindow?.Close()" >Close Window</button>
+    </div>
+</FloatingWindow>
+
+<!-- Centered Window -->
+<FloatingWindow @ref="centeredWindow"
+                Title="Centered Window"
+                Width="350"
+                Height="250"
+                CenterOnShow="true" >
+    <div class="window-content" >
+        <h3>Centered Window</h3>
+        <p>This window is automatically centered when shown.</p>
+        <p>It will appear in the center of the viewport.</p>
+        <div class="centered-controls" >
+            <button @onclick="() => centeredWindow?.SetPosition(100, 100)" >Move to (100,100)</button>
+            <button @onclick="() => centeredWindow?.SetSize(400, 300)" >Resize to 400x300</button>
+        </div>
+    </div>
+</FloatingWindow>
+
+@code {
+    private FloatingWindow? basicWindow;
+    private FloatingWindow? customWindow;
+    private FloatingWindow? centeredWindow;
+
+    private void ShowBasicWindow()
     {
+        basicWindow?.Show();
     }
+
+    private void ShowCustomWindow()
+    {
+        customWindow?.Show();
+    }
+
+    private void ShowCenteredWindow()
+    {
+        centeredWindow?.Show();
+    }
+
+    private void ShowAllWindows()
+    {
+        basicWindow?.Show();
+        customWindow?.Show();
+        centeredWindow?.Show();
+    }
+
+    private void HideAllWindows()
+    {
+        basicWindow?.Hide();
+        customWindow?.Hide();
+        centeredWindow?.Hide();
+    }
+
+    private void OnWindowShow()
+    {
+        Logger.LogInformation("Window shown");
+    }
+
+    private void OnWindowHide()
+    {
+        Logger.LogInformation("Window hidden");
+    }
+
+    private void OnDragStart()
+    {
+        Logger.LogInformation("Window drag started");
+    }
+
+    private void OnDragEnd()
+    {
+        Logger.LogInformation("Window drag ended");
+    }
+
 }
+
+<style>
+    .demo-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .demo-controls {
+        margin: 20px 0;
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .demo-button {
+        padding: 10px 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: transform 0.2s ease;
+    }
+
+    .demo-button:hover {
+        transform: translateY(-1px);
+    }
+
+    .demo-info {
+        background: #f8f9fa;
+        padding: 20px;
+        border-radius: 8px;
+        margin: 20px 0;
+    }
+
+    .demo-info ul {
+        margin: 10px 0;
+        padding-left: 20px;
+    }
+
+    .demo-info li {
+        margin: 5px 0;
+    }
+
+    .window-content {
+        padding: 0;
+    }
+
+    .window-content h3 {
+        margin-top: 0;
+        color: #374151;
+    }
+
+    .window-content p {
+        margin: 10px 0;
+        line-height: 1.6;
+    }
+
+    .window-content button {
+        padding: 8px 16px;
+        background: #667eea;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px 5px 5px 0;
+    }
+
+    .window-content button:hover {
+        background: #5a67d8;
+    }
+
+    .custom-content {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin: 15px 0;
+    }
+
+    .card {
+        background: #f8f9fa;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #e9ecef;
+    }
+
+    .card h4 {
+        margin-top: 0;
+        color: #495057;
+    }
+
+    .centered-controls {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .centered-controls button {
+        flex: 1;
+        font-size: 12px;
+    }
+</style>

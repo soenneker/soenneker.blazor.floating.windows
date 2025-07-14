@@ -7,89 +7,99 @@ using Soenneker.Blazor.Floating.Windows.Options;
 namespace Soenneker.Blazor.Floating.Windows.Abstract;
 
 /// <summary>
-/// Represents a floating Window component instance with customizable appearance, behavior, and lifecycle methods.
+/// Represents a floating window component instance with customizable appearance, behavior, and lifecycle methods.
 /// </summary>
 public interface IFloatingWindow : IAsyncDisposable
 {
     /// <summary>
-    /// The Window content as a plain string. Mutually exclusive with <see cref="SetWindowContent"/>.
+    /// The unique identifier used internally for window registration and DOM references.
     /// </summary>
-    string? Text { get; set; }
+    string ElementId { get; set; }
 
     /// <summary>
-    /// The unique identifier used internally for Window registration and DOM references.
-    /// </summary>
-    string Id { get; set; }
-
-    /// <summary>
-    /// Optional parameters applied to the Window container.
+    /// Optional parameters applied to the window container.
     /// </summary>
     Dictionary<string, object?>? WindowAttributes { get; set; }
 
     /// <summary>
-    /// Optional parameters applied to the Window anchor element.
-    /// </summary>
-    Dictionary<string, object?>? AnchorAttributes { get; set; }
-
-    /// <summary>
-    /// The main child content that serves as the anchor target for the Window.
+    /// The main child content that will be rendered inside the floating window.
     /// </summary>
     RenderFragment ChildContent { get; set; }
 
     /// <summary>
-    /// Callback triggered when the Window becomes visible.
+    /// Callback triggered when the window becomes visible.
     /// </summary>
     EventCallback OnShow { get; set; }
 
     /// <summary>
-    /// Callback triggered when the Window becomes hidden.
+    /// Callback triggered when the window becomes hidden.
     /// </summary>
     EventCallback OnHide { get; set; }
 
     /// <summary>
-    /// The full set of Window configuration options. Individual properties take precedence over this object.
+    /// Callback triggered when the window starts dragging.
+    /// </summary>
+    EventCallback OnDragStart { get; set; }
+
+    /// <summary>
+    /// Callback triggered when the window stops dragging.
+    /// </summary>
+    EventCallback OnDragEnd { get; set; }
+
+    /// <summary>
+    /// The full set of window configuration options. Individual properties take precedence over this object.
     /// </summary>
     FloatingWindowOptions Options { get; set; }
 
     /// <summary>
-    /// Override: Whether the Window animates on show/hide.
+    /// Override: Whether the window is draggable.
     /// </summary>
-    bool? Animate { get; set; }
+    bool? Draggable { get; set; }
 
     /// <summary>
-    /// Override: Delay in milliseconds before the Window is shown.
+    /// Override: Whether the window is resizable.
     /// </summary>
-    int? ShowDelay { get; set; }
+    bool? Resizable { get; set; }
 
     /// <summary>
-    /// Override: Delay in milliseconds before the Window is hidden.
+    /// Override: Whether the window has a close button.
     /// </summary>
-    int? HideDelay { get; set; }
+    bool? ShowCloseButton { get; set; }
 
     /// <summary>
-    /// Override: Whether to show the Window arrow.
+    /// Override: Whether the window has a title bar.
     /// </summary>
-    bool? ShowArrow { get; set; }
+    bool? ShowTitleBar { get; set; }
 
     /// <summary>
-    /// Override: Whether the Window is interactive (can receive pointer events).
+    /// Override: The title text for the window.
     /// </summary>
-    bool? Interactive { get; set; }
+    string? Title { get; set; }
 
     /// <summary>
-    /// Override: Whether the Window is enabled and active.
+    /// Override: Whether the window is enabled and active.
     /// </summary>
     bool? Enabled { get; set; }
 
     /// <summary>
-    /// Override: Maximum width of the Window in pixels.
+    /// Override: Initial width of the window in pixels.
     /// </summary>
-    int? MaxWidth { get; set; }
+    int? Width { get; set; }
 
     /// <summary>
-    /// Override: If true, the Window must be manually triggered to show/hide.
+    /// Override: Initial height of the window in pixels.
     /// </summary>
-    bool? ManualTrigger { get; set; }
+    int? Height { get; set; }
+
+    /// <summary>
+    /// Override: Initial X position of the window.
+    /// </summary>
+    int? InitialX { get; set; }
+
+    /// <summary>
+    /// Override: Initial Y position of the window.
+    /// </summary>
+    int? InitialY { get; set; }
 
     /// <summary>
     /// Override: Whether resources like scripts and styles should be loaded from CDN.
@@ -97,23 +107,42 @@ public interface IFloatingWindow : IAsyncDisposable
     bool? UseCdn { get; set; }
 
     /// <summary>
-    /// Provides Window content as a RenderFragment (instead of plain text).
-    /// </summary>
-    /// <param name="content">The content to be rendered inside the Window.</param>
-    void SetWindowContent(RenderFragment content);
-
-    /// <summary>
-    /// Shows the Window manually. Only applicable if <see cref="ManualTrigger"/> is <c>true</c>.
+    /// Shows the window.
     /// </summary>
     ValueTask Show();
 
     /// <summary>
-    /// Hides the Window manually. Only applicable if <see cref="ManualTrigger"/> is <c>true</c>.
+    /// Hides the window.
     /// </summary>
     ValueTask Hide();
 
     /// <summary>
-    /// Toggles the Window visibility manually. Only applicable if <see cref="ManualTrigger"/> is <c>true</c>.
+    /// Toggles the window visibility.
     /// </summary>
     ValueTask Toggle();
+
+    /// <summary>
+    /// Closes the window (hides and disposes).
+    /// </summary>
+    ValueTask Close();
+
+    /// <summary>
+    /// Gets the current position of the window.
+    /// </summary>
+    ValueTask<(int x, int y)> GetPosition();
+
+    /// <summary>
+    /// Sets the position of the window.
+    /// </summary>
+    ValueTask SetPosition(int x, int y);
+
+    /// <summary>
+    /// Gets the current size of the window.
+    /// </summary>
+    ValueTask<(int width, int height)> GetSize();
+
+    /// <summary>
+    /// Sets the size of the window.
+    /// </summary>
+    ValueTask SetSize(int width, int height);
 }
