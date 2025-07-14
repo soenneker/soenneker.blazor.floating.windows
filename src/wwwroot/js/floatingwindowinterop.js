@@ -44,8 +44,6 @@
             resizeDirection: null
         });
         
-        console.log('Window data stored for id:', id);
-
         // Setup dragging
         if (options.draggable) {
             this.setupDragging(id);
@@ -173,8 +171,10 @@
         windowData.resizeStart = {
             width: windowData.element.offsetWidth,
             height: windowData.element.offsetHeight,
-            x: e.clientX,
-            y: e.clientY
+            x: parseInt(windowData.element.style.left) || 0,
+            y: parseInt(windowData.element.style.top) || 0,
+            mouseX: e.clientX,
+            mouseY: e.clientY
         };
 
         this.bringToFront(id);
@@ -201,16 +201,16 @@
         const windowData = this.windows.get(id);
         if (!windowData || !windowData.isResizing) return;
 
-        const deltaX = e.clientX - windowData.resizeStart.x;
-        const deltaY = e.clientY - windowData.resizeStart.y;
+        const deltaX = e.clientX - windowData.resizeStart.mouseX;
+        const deltaY = e.clientY - windowData.resizeStart.mouseY;
         
         console.log('Resizing window:', id, 'direction:', windowData.resizeDirection, 'deltaX:', deltaX, 'deltaY:', deltaY);
         const direction = windowData.resizeDirection;
 
         let newWidth = windowData.resizeStart.width;
         let newHeight = windowData.resizeStart.height;
-        let newX = parseInt(windowData.element.style.left) || 0;
-        let newY = parseInt(windowData.element.style.top) || 0;
+        let newX = windowData.resizeStart.x;
+        let newY = windowData.resizeStart.y;
 
         // Calculate new dimensions based on resize direction
         if (direction.includes('e')) {
@@ -231,7 +231,7 @@
             newWidth = windowData.resizeStart.width - clampedDeltaX;
             
             // Adjust X position so the right edge stays in the same place
-            const originalX = parseInt(windowData.element.style.left) || 0;
+            const originalX = windowData.resizeStart.x;
             const originalWidth = windowData.resizeStart.width;
             newX = originalX + (originalWidth - newWidth);
         }
@@ -253,7 +253,7 @@
             newHeight = windowData.resizeStart.height - clampedDeltaY;
             
             // Adjust Y position so the bottom edge stays in the same place
-            const originalY = parseInt(windowData.element.style.top) || 0;
+            const originalY = windowData.resizeStart.y;
             const originalHeight = windowData.resizeStart.height;
             newY = originalY + (originalHeight - newHeight);
         }
