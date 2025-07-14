@@ -6,6 +6,7 @@
     }
 
     async create(id, optionsJson) {
+        console.log('FloatingWindowInterop.create called with:', { id });
         const options = JSON.parse(optionsJson);
 
         const window = document.getElementById(id);
@@ -42,6 +43,8 @@
             resizeStart: { width: 0, height: 0, x: 0, y: 0 },
             resizeDirection: null
         });
+        
+        console.log('Window data stored for id:', id);
 
         // Setup dragging
         if (options.draggable) {
@@ -57,7 +60,7 @@
         const closeButton = window.querySelector('.floating-window-close');
         if (closeButton) {
             closeButton.addEventListener('click', () => {
-                this.close(id);
+                this.hide(id);
             });
         }
 
@@ -200,6 +203,8 @@
 
         const deltaX = e.clientX - windowData.resizeStart.x;
         const deltaY = e.clientY - windowData.resizeStart.y;
+        
+        console.log('Resizing window:', id, 'direction:', windowData.resizeDirection, 'deltaX:', deltaX, 'deltaY:', deltaY);
         const direction = windowData.resizeDirection;
 
         let newWidth = windowData.resizeStart.width;
@@ -215,9 +220,20 @@
             }
         }
         if (direction.includes('w')) {
-            const widthChange = Math.min(deltaX, windowData.resizeStart.width - windowData.options.minWidth);
-            newWidth = windowData.resizeStart.width - widthChange;
-            newX = (parseInt(windowData.element.style.left) || 0) + widthChange;
+            // For west resize, the right edge stays anchored
+            const maxWidthChange = windowData.resizeStart.width - windowData.options.minWidth;
+            
+            // deltaX is positive when dragging right, negative when dragging left
+            // We want to limit the change to respect minimum width
+            const clampedDeltaX = Math.max(-maxWidthChange, Math.min(deltaX, maxWidthChange));
+            
+            // Calculate new width (decreasing when dragging right, increasing when dragging left)
+            newWidth = windowData.resizeStart.width - clampedDeltaX;
+            
+            // Adjust X position so the right edge stays in the same place
+            const originalX = parseInt(windowData.element.style.left) || 0;
+            const originalWidth = windowData.resizeStart.width;
+            newX = originalX + (originalWidth - newWidth);
         }
         if (direction.includes('s')) {
             newHeight = Math.max(windowData.options.minHeight, windowData.resizeStart.height + deltaY);
@@ -226,30 +242,60 @@
             }
         }
         if (direction.includes('n')) {
-            const heightChange = Math.min(deltaY, windowData.resizeStart.height - windowData.options.minHeight);
-            newHeight = windowData.resizeStart.height - heightChange;
-            newY = (parseInt(windowData.element.style.top) || 0) + heightChange;
+            // For north resize, the bottom edge stays anchored
+            const maxHeightChange = windowData.resizeStart.height - windowData.options.minHeight;
+            
+            // deltaY is positive when dragging down, negative when dragging up
+            // We want to limit the change to respect minimum height
+            const clampedDeltaY = Math.max(-maxHeightChange, Math.min(deltaY, maxHeightChange));
+            
+            // Calculate new height (decreasing when dragging down, increasing when dragging up)
+            newHeight = windowData.resizeStart.height - clampedDeltaY;
+            
+            // Adjust Y position so the bottom edge stays in the same place
+            const originalY = parseInt(windowData.element.style.top) || 0;
+            const originalHeight = windowData.resizeStart.height;
+            newY = originalY + (originalHeight - newHeight);
         }
 
         // Constrain to viewport if enabled
         if (windowData.options.constrainToViewport) {
             const viewportWidth = window.innerWidth;
             const viewportHeight = window.innerHeight;
+            const minWidth = windowData.options.minWidth || 200;
+            const minHeight = windowData.options.minHeight || 150;
 
+            // Constrain width to viewport
             if (newX + newWidth > viewportWidth) {
-                newWidth = viewportWidth - newX;
+                newWidth = Math.max(minWidth, viewportWidth - newX);
             }
+            
+            // Constrain height to viewport
             if (newY + newHeight > viewportHeight) {
-                newHeight = viewportHeight - newY;
+                newHeight = Math.max(minHeight, viewportHeight - newY);
             }
+            
+            // Constrain X position to viewport
             if (newX < 0) {
-                newWidth += newX;
                 newX = 0;
+                // Adjust width if it would exceed viewport
+                if (newWidth > viewportWidth) {
+                    newWidth = viewportWidth;
+                }
             }
+            
+            // Constrain Y position to viewport
             if (newY < 0) {
-                newHeight += newY;
                 newY = 0;
+                // Adjust height if it would exceed viewport
+                if (newHeight > viewportHeight) {
+                    newHeight = viewportHeight;
+                }
             }
+            
+            // Ensure minimum dimensions are maintained
+            newWidth = Math.max(minWidth, newWidth);
+            newHeight = Math.max(minHeight, newHeight);
         }
 
         // Apply new dimensions
@@ -257,6 +303,8 @@
         windowData.element.style.height = `${newHeight}px`;
         windowData.element.style.left = `${newX}px`;
         windowData.element.style.top = `${newY}px`;
+        
+        console.log('Window resized to:', { width: newWidth, height: newHeight, x: newX, y: newY });
     }
 
     setCallbacks(id, dotNetRef) {
@@ -283,14 +331,19 @@
     }
 
     hide(id) {
+        console.log('FloatingWindowInterop.hide called with:', { id });
         const windowData = this.windows.get(id);
-        if (!windowData) return;
+        if (!windowData) {
+            console.warn('Window data not found for hide id:', id);
+            return;
+        }
 
         windowData.element.style.display = 'none';
         windowData.element.classList.remove('visible');
         if (windowData.dotNetRef) {
             windowData.dotNetRef.invokeMethodAsync("InvokeOnHide").catch(console.error);
         }
+        console.log('Window hidden for id:', id);
     }
 
     toggle(id) {
@@ -305,13 +358,18 @@
     }
 
     close(id) {
+        console.log('FloatingWindowInterop.close called with:', { id });
         this.hide(id);
         this.destroy(id);
     }
 
     destroy(id) {
+        console.log('FloatingWindowInterop.destroy called with:', { id });
         const windowData = this.windows.get(id);
-        if (!windowData) return;
+        if (!windowData) {
+            console.warn('Window data not found for destroy id:', id);
+            return;
+        }
 
         // Cleanup event listeners
         if (windowData.cleanupDragging) {
@@ -327,6 +385,7 @@
         }
 
         this.windows.delete(id);
+        console.log('Window data destroyed for id:', id);
     }
 
     getPosition(id) {
