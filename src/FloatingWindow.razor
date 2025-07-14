@@ -5,26 +5,30 @@
 @using Soenneker.Blazor.Floating.Windows.Options
 @using Soenneker.Extensions.Task
 @using Soenneker.Extensions.ValueTask
+@using Microsoft.AspNetCore.Components.Web
 
 @inject IFloatingWindowInterop WindowInterop
 
 @implements IFloatingWindow
 
-<div id="@ElementId" class="floating-window @(_visible ? "visible" : "")" @attributes="WindowAttributes">
+<div id="@ElementId" 
+     class="floating-window @(_visible ? "visible" : "") @(MergedOptions.StyleOptions.CustomClass)" 
+     style="@GetWindowStyles()"
+     data-dark-mode="@MergedOptions.StyleOptions.UseDarkMode.ToString().ToLower()" >
     @if (MergedOptions.ShowTitleBar)
     {
-        <div class="floating-window-titlebar" >
-            <div class="floating-window-title" >@(MergedOptions.Title ?? "Window")</div>
+        <div class="floating-window-titlebar" style="@GetTitleBarStyles()" >
+            <div class="floating-window-title" style="@GetTitleStyles()" >@(MergedOptions.Title ?? "Window")</div>
             @if (MergedOptions.ShowCloseButton)
             {
-                <button class="floating-window-close" type="button" aria-label="Close" >
+                <button class="floating-window-close" type="button" aria-label="Close" style="@GetCloseButtonStyles()" @onclick="OnCloseClick">
                     <span>&times;</span>
                 </button>
             }
         </div>
     }
 
-    <div class="floating-window-content" >
+    <div class="floating-window-content" style="@GetContentStyles()">
         @ChildContent
     </div>
 
@@ -100,6 +104,9 @@
     [Parameter]
     public bool? UseCdn { get; set; }
 
+    [Parameter]
+    public FloatingWindowStyleOptions? StyleOptions { get; set; }
+
     private FloatingWindowOptions MergedOptions => new()
     {
         Draggable = Draggable ?? Options.Draggable,
@@ -120,7 +127,8 @@
         CenterOnShow = Options.CenterOnShow,
         FocusOnShow = Options.FocusOnShow,
         UseCdn = UseCdn ?? Options.UseCdn,
-        ZIndex = Options.ZIndex
+        ZIndex = Options.ZIndex,
+        StyleOptions = StyleOptions ?? Options.StyleOptions
     };
 
     private bool _initialized;
@@ -179,6 +187,9 @@
             await WindowInterop.Initialize(MergedOptions.UseCdn, _disposeCts.Token).NoSync();
             _dotNetRef = DotNetObjectReference.Create(this);
 
+            // Wait a bit to ensure the element is in the DOM
+            await Task.Delay(10, _disposeCts.Token);
+            
             await WindowInterop.Create(ElementId, MergedOptions, _disposeCts.Token).NoSync();
             await WindowInterop.SetCallbacks(ElementId, _dotNetRef!).NoSync();
 
@@ -216,9 +227,17 @@
         Console.WriteLine($"Show() called for window {ElementId}, initialized: {_initialized}");
         if (_initialized)
         {
-            await WindowInterop.Show(ElementId, _disposeCts.Token);
-            _visible = true;
-            Console.WriteLine($"Window {ElementId} shown successfully");
+            try
+            {
+                await WindowInterop.Show(ElementId, _disposeCts.Token);
+                _visible = true;
+                StateHasChanged();
+                Console.WriteLine($"Window {ElementId} shown successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error showing window {ElementId}: {ex.Message}");
+            }
         }
         else
         {
@@ -287,6 +306,92 @@
         {
             await WindowInterop.SetSize(ElementId, width, height, _disposeCts.Token);
         }
+    }
+
+    private string GetWindowStyles()
+    {
+        var styles = new List<string>
+        {
+            $"background-color: {MergedOptions.StyleOptions.BackgroundColor}",
+            $"border: {MergedOptions.StyleOptions.BorderWidth} solid {MergedOptions.StyleOptions.BorderColor}",
+            $"border-radius: {MergedOptions.StyleOptions.BorderRadius}",
+            $"box-shadow: {MergedOptions.StyleOptions.BoxShadow}",
+            $"color: {MergedOptions.StyleOptions.TextColor}",
+            $"font-family: {MergedOptions.StyleOptions.FontFamily}",
+            $"font-size: {MergedOptions.StyleOptions.FontSize}",
+            $"line-height: {MergedOptions.StyleOptions.LineHeight}",
+            $"min-width: {MergedOptions.StyleOptions.MinWidth}",
+            $"min-height: {MergedOptions.StyleOptions.MinHeight}",
+            $"z-index: {MergedOptions.StyleOptions.ZIndex}",
+            $"transition: opacity {MergedOptions.StyleOptions.TransitionDuration} {MergedOptions.StyleOptions.TransitionTimingFunction}, transform {MergedOptions.StyleOptions.TransitionDuration} {MergedOptions.StyleOptions.TransitionTimingFunction}",
+            $"--close-button-hover-bg: {MergedOptions.StyleOptions.CloseButtonHoverBackgroundColor}",
+            $"--close-button-active-bg: {MergedOptions.StyleOptions.CloseButtonActiveBackgroundColor}",
+            $"--resize-handle-hover-bg: {MergedOptions.StyleOptions.ResizeHandleHoverBackgroundColor}",
+            $"--focus-box-shadow: {MergedOptions.StyleOptions.BoxShadow}, 0 0 0 {MergedOptions.StyleOptions.FocusBorderWidth} {MergedOptions.StyleOptions.FocusBorderColor}"
+        };
+
+        // Add custom styles if provided
+        if (MergedOptions.StyleOptions.CustomStyles != null)
+        {
+            foreach (var customStyle in MergedOptions.StyleOptions.CustomStyles)
+            {
+                styles.Add($"{customStyle.Key}: {customStyle.Value}");
+            }
+        }
+
+        return string.Join("; ", styles);
+    }
+
+    private string GetTitleBarStyles()
+    {
+        var styles = new List<string>
+        {
+            $"background: {(MergedOptions.StyleOptions.TitleBarBackgroundGradient ?? MergedOptions.StyleOptions.TitleBarBackgroundColor)}",
+            $"color: {MergedOptions.StyleOptions.TitleBarTextColor}",
+            $"font-weight: {MergedOptions.StyleOptions.TitleBarFontWeight}",
+            $"font-size: {MergedOptions.StyleOptions.TitleBarFontSize}",
+            $"padding: {MergedOptions.StyleOptions.TitleBarPadding}",
+            $"border-bottom: 1px solid {MergedOptions.StyleOptions.TitleBarBorderBottomColor}"
+        };
+
+        return string.Join("; ", styles);
+    }
+
+    private string GetTitleStyles()
+    {
+        var styles = new List<string>
+        {
+            $"color: {MergedOptions.StyleOptions.TitleBarTextColor}",
+            $"font-weight: {MergedOptions.StyleOptions.TitleBarFontWeight}",
+            $"font-size: {MergedOptions.StyleOptions.TitleBarFontSize}"
+        };
+
+        return string.Join("; ", styles);
+    }
+
+    private string GetCloseButtonStyles()
+    {
+        var styles = new List<string>
+        {
+            $"background-color: {MergedOptions.StyleOptions.CloseButtonBackgroundColor}",
+            $"color: {MergedOptions.StyleOptions.CloseButtonTextColor}",
+            $"border-radius: {MergedOptions.StyleOptions.CloseButtonBorderRadius}",
+            $"font-size: {MergedOptions.StyleOptions.CloseButtonFontSize}",
+            $"transition: background-color {MergedOptions.StyleOptions.TransitionDuration} {MergedOptions.StyleOptions.TransitionTimingFunction}"
+        };
+
+        return string.Join("; ", styles);
+    }
+
+    private string GetContentStyles()
+    {
+        var styles = new List<string>
+        {
+            $"padding: {MergedOptions.StyleOptions.ContentPadding}",
+            $"color: {MergedOptions.StyleOptions.TextColor}"
+        };
+
+        return string.Join("; ", styles);
     }
 
     public async ValueTask DisposeAsync()

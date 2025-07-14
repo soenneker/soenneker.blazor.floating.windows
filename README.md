@@ -10,12 +10,12 @@ A Blazor component library for creating draggable, resizable floating windows wi
 
 - ✅ **Draggable Windows** - Drag windows by their title bar
 - ✅ **Resizable Windows** - Resize by dragging edges and corners
-- ✅ **Modern Styling** - Beautiful gradient title bars and smooth animations
-- ✅ **Customizable** - Full control over appearance and behavior
+- ✅ **Highly Configurable Styling** - Complete control over colors, fonts, borders, and more
+- ✅ **Multiple Themes** - Built-in light, dark, and demo themes
+- ✅ **Custom CSS Support** - Add custom classes and inline styles
 - ✅ **Viewport Constraints** - Keep windows within screen bounds
 - ✅ **Z-Index Management** - Automatic focus and layering
 - ✅ **Responsive Design** - Works on desktop and mobile
-- ✅ **Dark Mode Support** - Automatic theme detection
 - ✅ **Accessibility** - Proper ARIA labels and keyboard support
 - ✅ **Event Callbacks** - React to show, hide, drag, and resize events
 
@@ -48,6 +48,52 @@ builder.Services.AddFloatingWindowAsScoped();
         <p>This is a floating window with your content.</p>
         <button @onclick="() => window?.Close()">Close</button>
     </div>
+</FloatingWindow>
+```
+
+## Styling Configuration
+
+The floating window component now supports highly configurable styling with multiple built-in themes and custom options.
+
+### Built-in Themes
+
+```razor
+<!-- Default light theme (white/black) -->
+<FloatingWindow StyleOptions="FloatingWindowStyleOptions.DefaultLight">
+    <!-- Content -->
+</FloatingWindow>
+
+<!-- Default dark theme -->
+<FloatingWindow StyleOptions="FloatingWindowStyleOptions.DefaultDark">
+    <!-- Content -->
+</FloatingWindow>
+
+<!-- Demo theme (colorful gradient) -->
+<FloatingWindow StyleOptions="FloatingWindowStyleOptions.DemoTheme">
+    <!-- Content -->
+</FloatingWindow>
+```
+
+### Custom Styling
+
+```razor
+<FloatingWindow StyleOptions="new FloatingWindowStyleOptions
+{
+    BackgroundColor = \"#f8f9fa\",
+    BorderColor = \"#dee2e6\",
+    BorderRadius = \"12px\",
+    TitleBarBackgroundColor = \"#007bff\",
+    TitleBarTextColor = \"#ffffff\",
+    CloseButtonTextColor = \"#ffffff\",
+    CloseButtonHoverBackgroundColor = \"rgba(255, 255, 255, 0.2)\",
+    CustomClass = \"my-custom-window\",
+    CustomStyles = new Dictionary<string, string>
+    {
+        [\"backdrop-filter\"] = \"blur(10px)\",
+        [\"border\"] = \"2px solid #007bff\"
+    }
+}">
+    <!-- Content -->
 </FloatingWindow>
 ```
 
@@ -121,6 +167,7 @@ builder.Services.AddFloatingWindowAsScoped();
 | `Resizable` | `bool?` | `true` | Whether the window can be resized |
 | `ShowCloseButton` | `bool?` | `true` | Whether to show the close button |
 | `ShowTitleBar` | `bool?` | `true` | Whether to show the title bar |
+| `StyleOptions` | `FloatingWindowStyleOptions` | `DefaultLight` | Styling configuration for the window |
 
 ### Event Callbacks
 

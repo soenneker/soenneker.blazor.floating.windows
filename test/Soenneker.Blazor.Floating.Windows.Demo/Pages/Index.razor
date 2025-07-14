@@ -1,10 +1,12 @@
 ﻿@page "/"
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.Floating.Windows
+@using Soenneker.Blazor.Floating.Windows.Options
 
 @inject ILogger<Index> Logger
 
 <div class="demo-container" >
+    <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" alt="Logo" height="32" />
     <h1>Soenneker.Blazor.Floating.Windows Demo</h1>
     <p>This page demonstrates the floating window component with drag, resize, and positioning capabilities.</p>
 
@@ -12,6 +14,7 @@
         <button @onclick="ShowBasicWindow" class="demo-button" >Show Basic Window</button>
         <button @onclick="ShowCustomWindow" class="demo-button" >Show Custom Window</button>
         <button @onclick="ShowCenteredWindow" class="demo-button" >Show Centered Window</button>
+        <button @onclick="ShowDarkWindow" class="demo-button" >Show Dark Window</button>
         <button @onclick="ShowAllWindows" class="demo-button" >Show All Windows</button>
         <button @onclick="HideAllWindows" class="demo-button" >Hide All Windows</button>
     </div>
@@ -26,7 +29,9 @@
             <li>✅ Viewport constraints</li>
             <li>✅ Z-index management</li>
             <li>✅ Responsive design</li>
-            <li>✅ Dark mode support</li>
+            <li>✅ Highly configurable styling</li>
+            <li>✅ Light and dark themes</li>
+            <li>✅ Custom CSS support</li>
         </ul>
     </div>
 </div>
@@ -38,13 +43,14 @@
                 Height="300"
                 InitialX="50"
                 InitialY="50"
+                StyleOptions="FloatingWindowStyleOptions.DefaultLight"
                 OnShow="OnWindowShow"
                 OnHide="OnWindowHide"
                 OnDragStart="OnDragStart"
                 OnDragEnd="OnDragEnd" >
     <div class="window-content" >
         <h3>Basic Floating Window</h3>
-        <p>This is a basic floating window that you can drag around and resize.</p>
+        <p>This is a basic floating window with default light theme styling.</p>
         <p>Try dragging the title bar to move it, or drag the edges to resize it.</p>
         <button @onclick="() => basicWindow?.Hide()" >Hide Window</button>
     </div>
@@ -57,12 +63,13 @@
                 Height="400"
                 InitialX="200"
                 InitialY="100"
+                StyleOptions="DemoTheme"
                 ShowCloseButton="true"
                 Draggable="true"
                 Resizable="true" >
     <div class="window-content" >
         <h3>Custom Styled Window</h3>
-        <p>This window has custom styling and larger dimensions.</p>
+        <p>This window uses the demo theme with colorful gradient styling.</p>
         <div class="custom-content" >
             <div class="card" >
                 <h4>Card 1</h4>
@@ -82,6 +89,7 @@
                 Title="Centered Window"
                 Width="350"
                 Height="250"
+                StyleOptions="FloatingWindowStyleOptions.DefaultLight"
                 CenterOnShow="true" >
     <div class="window-content" >
         <h3>Centered Window</h3>
@@ -94,10 +102,46 @@
     </div>
 </FloatingWindow>
 
+<!-- Dark Window -->
+<FloatingWindow @ref="darkWindow"
+                Title="Dark Theme Window"
+                Width="450"
+                Height="300"
+                InitialX="300"
+                InitialY="150"
+                StyleOptions="FloatingWindowStyleOptions.DefaultDark" >
+    <div class="window-content" >
+        <h3>Dark Theme Window</h3>
+        <p>This window uses the default dark theme styling.</p>
+        <p>Perfect for applications that support dark mode.</p>
+        <div class="dark-content" >
+            <div class="dark-card" >
+                <h4>Dark Card</h4>
+                <p>This card adapts to the dark theme.</p>
+            </div>
+        </div>
+        <button @onclick="() => darkWindow?.Hide()" >Hide Window</button>
+    </div>
+</FloatingWindow>
+
 @code {
     private FloatingWindow? basicWindow;
     private FloatingWindow? customWindow;
     private FloatingWindow? centeredWindow;
+    private FloatingWindow? darkWindow;
+
+    // Demo theme for the custom window (not part of the library)
+    private static readonly FloatingWindowStyleOptions DemoTheme = new()
+    {
+        TitleBarBackgroundGradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+        TitleBarTextColor = "#ffffff",
+        TitleBarBorderBottomColor = "rgba(255, 255, 255, 0.1)",
+        CloseButtonTextColor = "#ffffff",
+        CloseButtonHoverBackgroundColor = "rgba(255, 255, 255, 0.2)",
+        CloseButtonActiveBackgroundColor = "rgba(255, 255, 255, 0.3)",
+        ResizeHandleHoverBackgroundColor = "rgba(102, 126, 234, 0.1)",
+        FocusBorderColor = "rgba(102, 126, 234, 0.3)"
+    };
 
     private void ShowBasicWindow()
     {
@@ -114,11 +158,17 @@
         centeredWindow?.Show();
     }
 
+    private void ShowDarkWindow()
+    {
+        darkWindow?.Show();
+    }
+
     private void ShowAllWindows()
     {
         basicWindow?.Show();
         customWindow?.Show();
         centeredWindow?.Show();
+        darkWindow?.Show();
     }
 
     private void HideAllWindows()
@@ -126,6 +176,7 @@
         basicWindow?.Hide();
         customWindow?.Hide();
         centeredWindow?.Hide();
+        darkWindow?.Hide();
     }
 
     private void OnWindowShow()
@@ -247,6 +298,23 @@
         display: flex;
         gap: 10px;
         margin-top: 15px;
+    }
+
+    .dark-content {
+        margin: 15px 0;
+    }
+
+    .dark-card {
+        background: #374151;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid #4b5563;
+        color: #f9fafb;
+    }
+
+    .dark-card h4 {
+        margin-top: 0;
+        color: #e5e7eb;
     }
 
     .centered-controls button {

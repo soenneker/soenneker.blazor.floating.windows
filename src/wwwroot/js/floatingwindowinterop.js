@@ -10,27 +10,39 @@
         const options = JSON.parse(optionsJson);
 
         const window = document.getElementById(id);
+        
+        // Check if element exists before proceeding
+        if (!window) {
+            console.error('FloatingWindowInterop.create: Element with id', id, 'not found');
+            return;
+        }
 
         if (!options?.enabled) {
-            window.style.display = 'none';
+            if (window) {
+                window.style.display = 'none';
+            }
             return;
         }
 
         // Set initial styles
-        window.style.position = 'fixed';
-        window.style.zIndex = options.zIndex || this.nextZIndex++;
-        
-        if (options.width) {
-            window.style.width = `${options.width}px`;
-        }
-        if (options.height) {
-            window.style.height = `${options.height}px`;
-        }
-        if (options.initialX !== undefined) {
-            window.style.left = `${options.initialX}px`;
-        }
-        if (options.initialY !== undefined) {
-            window.style.top = `${options.initialY}px`;
+        try {
+            window.style.position = 'fixed';
+            window.style.zIndex = options.zIndex || this.nextZIndex++;
+            
+            if (options.width) {
+                window.style.width = `${options.width}px`;
+            }
+            if (options.height) {
+                window.style.height = `${options.height}px`;
+            }
+            if (options.initialX !== undefined) {
+                window.style.left = `${options.initialX}px`;
+            }
+            if (options.initialY !== undefined) {
+                window.style.top = `${options.initialY}px`;
+            }
+        } catch (error) {
+            console.error('Error setting initial styles for window', id, ':', error);
         }
 
         // Store window data
@@ -54,16 +66,8 @@
             this.setupResizing(id);
         }
 
-        // Setup close button
-        const closeButton = window.querySelector('.floating-window-close');
-        if (closeButton) {
-            closeButton.addEventListener('click', () => {
-                this.hide(id);
-            });
-        }
-
         // Don't show the window automatically - let the Show() method handle it
-        window.style.display = 'none';
+        // The CSS already handles display: none by default
     }
 
     setupDragging(id) {
@@ -315,14 +319,12 @@
     }
 
     show(id) {
-        console.log('FloatingWindowInterop.show called with:', { id });
         const windowData = this.windows.get(id);
         if (!windowData) {
             console.warn('Window data not found for id:', id);
             return;
         }
 
-        console.log('Showing window:', windowData.element);
         windowData.element.style.display = 'block';
         windowData.element.classList.add('visible');
         if (windowData.dotNetRef) {
@@ -331,7 +333,6 @@
     }
 
     hide(id) {
-        console.log('FloatingWindowInterop.hide called with:', { id });
         const windowData = this.windows.get(id);
         if (!windowData) {
             console.warn('Window data not found for hide id:', id);
@@ -343,7 +344,6 @@
         if (windowData.dotNetRef) {
             windowData.dotNetRef.invokeMethodAsync("InvokeOnHide").catch(console.error);
         }
-        console.log('Window hidden for id:', id);
     }
 
     toggle(id) {
@@ -358,13 +358,11 @@
     }
 
     close(id) {
-        console.log('FloatingWindowInterop.close called with:', { id });
         this.hide(id);
         this.destroy(id);
     }
 
     destroy(id) {
-        console.log('FloatingWindowInterop.destroy called with:', { id });
         const windowData = this.windows.get(id);
         if (!windowData) {
             console.warn('Window data not found for destroy id:', id);
@@ -385,7 +383,6 @@
         }
 
         this.windows.delete(id);
-        console.log('Window data destroyed for id:', id);
     }
 
     getPosition(id) {

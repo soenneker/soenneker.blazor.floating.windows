@@ -120,4 +120,10 @@ public class FloatingWindowOptions
     /// </summary>
     [JsonPropertyName("zIndex")]
     public int ZIndex { get; set; } = 1000;
+
+    /// <summary>
+    /// Style options for configuring the appearance of the window.
+    /// </summary>
+    [JsonPropertyName("styleOptions")]
+    public FloatingWindowStyleOptions StyleOptions { get; set; } = FloatingWindowStyleOptions.DefaultLight;
 }
