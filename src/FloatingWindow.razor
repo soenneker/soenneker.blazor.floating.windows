@@ -129,6 +129,8 @@
     [Parameter]
     public bool? RecenterOnResize { get; set; }
 
+    public bool IsVisible => _visible;
+
     private FloatingWindowOptions MergedOptions => new()
     {
         Draggable = Draggable ?? Options.Draggable,
