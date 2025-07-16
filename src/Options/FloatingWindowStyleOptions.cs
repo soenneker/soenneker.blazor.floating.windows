@@ -198,7 +198,7 @@ public class FloatingWindowStyleOptions
     /// Whether to use dark mode styling.
     /// </summary>
     [JsonPropertyName("useDarkMode")]
-    public bool UseDarkMode { get; set; } = false;
+    public bool UseDarkMode { get; set; }
 
     /// <summary>
     /// Custom CSS class to apply to the window.

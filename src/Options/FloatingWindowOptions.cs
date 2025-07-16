@@ -125,13 +125,13 @@ public class FloatingWindowOptions
     /// Whether the window should dynamically resize to fit its content as it changes (uses ResizeObserver).
     /// </summary>
     [JsonPropertyName("dynamicAutoSizeToContent")]
-    public bool DynamicAutoSizeToContent { get; set; } = false;
+    public bool DynamicAutoSizeToContent { get; set; }
 
     /// <summary>
     /// Whether the window should automatically re-center itself when its content size changes (requires auto size to content or dynamic auto size to content). Defaults to false.
     /// </summary>
     [JsonPropertyName("recenterOnResize")]
-    public bool RecenterOnResize { get; set; } = false;
+    public bool RecenterOnResize { get; set; }
 
     /// <summary>
     /// Z-index for the window. Higher values appear on top.

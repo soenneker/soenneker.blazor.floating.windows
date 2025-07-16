@@ -14,24 +14,31 @@
 
 @implements IFloatingWindow
 
-<div id="@ElementId" 
-     class="floating-window @(_visible ? "visible" : "") @(MergedOptions.StyleOptions.CustomClass)" 
+<div id="@ElementId"
+     class="floating-window @(_visible ? "visible" : "") @(MergedOptions.StyleOptions.CustomClass)"
      style="@GetWindowStyles()"
      data-dark-mode="@MergedOptions.StyleOptions.UseDarkMode.ToString().ToLower()" >
     @if (MergedOptions.ShowTitleBar)
     {
         <div class="floating-window-titlebar" style="@GetTitleBarStyles()" >
-            <div class="floating-window-title" style="@GetTitleStyles()" >@(MergedOptions.Title ?? "Window")</div>
+            @if (HeaderContent != null)
+            {
+                @HeaderContent
+            }
+            else
+            {
+                <div class="floating-window-title" style="@GetTitleStyles()" >@(MergedOptions.Title ?? "Window")</div>
+            }
             @if (MergedOptions.ShowCloseButton)
             {
-                <button class="floating-window-close" type="button" aria-label="Close" style="@GetCloseButtonStyles()" @onclick="OnCloseClick">
+                <button class="floating-window-close" type="button" aria-label="Close" style="@GetCloseButtonStyles()" @onclick="OnCloseClick" >
                     <span>&times;</span>
                 </button>
             }
         </div>
     }
 
-    <div class="floating-window-content" style="@GetContentStyles()">
+    <div class="floating-window-content" style="@GetContentStyles()" >
         @ChildContent
     </div>
 
@@ -55,6 +62,9 @@
 
     [Parameter]
     public RenderFragment ChildContent { get; set; } = null!;
+
+    [Parameter]
+    public RenderFragment? HeaderContent { get; set; }
 
     [Parameter]
     public string ElementId { get; set; } = "fw-" + Guid.NewGuid();
@@ -152,29 +162,29 @@
     private DotNetObjectReference<FloatingWindow>? _dotNetRef;
 
     [JSInvokable]
-    public async Task InvokeOnShow()
+    public Task InvokeOnShow()
     {
         _visible = true;
-        await OnShow.InvokeIfHasDelegate().NoSync();
+        return OnShow.InvokeIfHasDelegate();
     }
 
     [JSInvokable]
-    public async Task InvokeOnHide()
+    public Task InvokeOnHide()
     {
         _visible = false;
-        await OnHide.InvokeIfHasDelegate().NoSync();
+        return OnHide.InvokeIfHasDelegate();
     }
 
     [JSInvokable]
-    public async Task InvokeOnDragStart()
+    public Task InvokeOnDragStart()
     {
-        await OnDragStart.InvokeIfHasDelegate().NoSync();
+        return OnDragStart.InvokeIfHasDelegate();
     }
 
     [JSInvokable]
-    public async Task InvokeOnDragEnd()
+    public Task InvokeOnDragEnd()
     {
-        await OnDragEnd.InvokeIfHasDelegate().NoSync();
+        return OnDragEnd.InvokeIfHasDelegate();
     }
 
     [JSInvokable]
@@ -182,42 +192,28 @@
     {
         if (MergedOptions.RecenterOnResize)
         {
-            await Center();
-        }
-    }
-
-    private async Task OnTitleBarMouseDown()
-    {
-        if (MergedOptions.Draggable)
-        {
-            await WindowInterop.BringToFront(ElementId, _disposeCts.Token);
+            await Center().NoSync();
         }
     }
 
     private async Task OnCloseClick()
     {
-        await Hide();
+        await Hide().NoSync();
     }
 
-    private async Task OnResizeMouseDown()
-    {
-        await WindowInterop.BringToFront(ElementId, _disposeCts.Token);
-    }
-
-    /// <summary>
-    /// Centers the window in the viewport, accounting for its width and height.
-    /// </summary>
     public async ValueTask Center(CancellationToken cancellationToken = default)
     {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
+
         try
         {
-            FloatingWindowSize windowSize = await WindowInterop.GetSize(ElementId, _disposeCts.Token).NoSync();
-            FloatingWindowSize viewportSize = await WindowInterop.GetViewportSize(_disposeCts.Token).NoSync();
+            FloatingWindowSize windowSize = await WindowInterop.GetSize(ElementId, linkedCts.Token).NoSync();
+            FloatingWindowSize viewportSize = await WindowInterop.GetViewportSize(linkedCts.Token).NoSync();
 
             int x = (viewportSize.Width - windowSize.Width) / 2;
             int y = (viewportSize.Height - windowSize.Height) / 2;
 
-            await WindowInterop.SetPosition(ElementId, x, y, _disposeCts.Token).NoSync();
+            await WindowInterop.SetPosition(ElementId, x, y, linkedCts.Token).NoSync();
         }
         catch (Exception ex)
         {
@@ -254,8 +250,9 @@
             {
                 if (MergedOptions.CenterOnShow)
                 {
-                    await WindowInterop.CenterInViewport(ElementId, linkedCts.Token);
+                    await WindowInterop.CenterInViewport(ElementId, linkedCts.Token).NoSync();
                 }
+
                 await WindowInterop.Show(ElementId, linkedCts.Token).NoSync();
                 _visible = true;
                 StateHasChanged();
@@ -317,9 +314,8 @@
         if (_initialized)
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
-            await WindowInterop.SetPosition(ElementId, x, y, linkedCts.Token);
+            await WindowInterop.SetPosition(ElementId, x, y, linkedCts.Token).NoSync();
         }
-
     }
 
     public async ValueTask<FloatingWindowSize> GetSize(CancellationToken cancellationToken = default)
@@ -330,7 +326,7 @@
             return await WindowInterop.GetSize(ElementId, linkedCts.Token).NoSync();
         }
 
-        return new FloatingWindowSize { Width = 0, Height = 0 };
+        return new FloatingWindowSize {Width = 0, Height = 0};
     }
 
     public async ValueTask SetSize(int width, int height, CancellationToken cancellationToken = default)
@@ -338,7 +334,7 @@
         if (_initialized)
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
-            await WindowInterop.SetSize(ElementId, width, height, linkedCts.Token);
+            await WindowInterop.SetSize(ElementId, width, height, linkedCts.Token).NoSync();
         }
     }
 
@@ -346,7 +342,7 @@
     public async ValueTask Destroy(CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(_disposeCts.Token, cancellationToken);
-        await WindowInterop.Destroy(ElementId, linkedCts.Token);
+        await WindowInterop.Destroy(ElementId, linkedCts.Token).NoSync();
     }
 
     private string GetWindowStyles()
@@ -387,7 +383,7 @@
     {
         var styles = new List<string>
         {
-            $"background: {(MergedOptions.StyleOptions.TitleBarBackgroundGradient ?? MergedOptions.StyleOptions.TitleBarBackgroundColor)}",
+            $"background: {MergedOptions.StyleOptions.TitleBarBackgroundGradient ?? MergedOptions.StyleOptions.TitleBarBackgroundColor}",
             $"color: {MergedOptions.StyleOptions.TitleBarTextColor}",
             $"font-weight: {MergedOptions.StyleOptions.TitleBarFontWeight}",
             $"font-size: {MergedOptions.StyleOptions.TitleBarFontSize}",

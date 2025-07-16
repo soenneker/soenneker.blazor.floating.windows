@@ -114,7 +114,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public ValueTask<FloatingWindowSize> GetSize(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getSize", cancellationToken, id);
+        return _jSRuntime.InvokeAsync<FloatingWindowSize>($"{_moduleName}.getSize", cancellationToken, id);
     }
 
     public ValueTask SetSize(string id, int width, int height, CancellationToken cancellationToken = default)
@@ -129,7 +129,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public ValueTask<FloatingWindowSize> GetViewportSize(CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getViewportSize", cancellationToken);
+        return _jSRuntime.InvokeAsync<FloatingWindowSize>($"{_moduleName}.getViewportSize", cancellationToken);
     }
 
     public ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default)
