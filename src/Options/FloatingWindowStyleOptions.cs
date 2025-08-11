@@ -6,7 +6,7 @@ namespace Soenneker.Blazor.Floating.Windows.Options;
 /// <summary>
 /// Style options for configuring the appearance of a floating window.
 /// </summary>
-public class FloatingWindowStyleOptions
+public sealed class FloatingWindowStyleOptions
 {
     /// <summary>
     /// Background color of the window body.

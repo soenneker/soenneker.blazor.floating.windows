@@ -5,7 +5,7 @@ namespace Soenneker.Blazor.Floating.Windows.Options;
 /// <summary>
 /// Options for configuring a floating window.
 /// </summary>
-public class FloatingWindowOptions
+public sealed class FloatingWindowOptions
 {
     /// <summary>
     /// Whether the window is draggable by its title bar.
