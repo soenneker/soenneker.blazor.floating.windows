@@ -1,17 +1,17 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Soenneker.Quark.Components.Cancellable.Abstract;
 
 namespace Soenneker.Blazor.Floating.Windows.Abstract;
 
 /// <summary>
 /// Represents a floating window component instance with customizable appearance, behavior, and lifecycle methods.
 /// </summary>
-public interface IFloatingWindow : IAsyncDisposable
+public interface IFloatingWindow : ICancellableComponent
 {
     /// <summary>
     /// The unique identifier used internally for window registration and DOM references.
