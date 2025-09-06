@@ -194,13 +194,13 @@
     {
         if (MergedOptions.RecenterOnResize)
         {
-            await Center().NoSync();
+            await Center();
         }
     }
 
     private async Task OnCloseClick()
     {
-        await Hide().NoSync();
+        await Hide();
     }
 
     public async ValueTask Center(CancellationToken cancellationToken = default)
@@ -211,13 +211,13 @@
         {
             try
             {
-                FloatingWindowSize windowSize = await WindowInterop.GetSize(ElementId, linked).NoSync();
-                FloatingWindowSize viewportSize = await WindowInterop.GetViewportSize(linked).NoSync();
+                FloatingWindowSize windowSize = await WindowInterop.GetSize(ElementId, linked);
+                FloatingWindowSize viewportSize = await WindowInterop.GetViewportSize(linked);
 
                 int x = (viewportSize.Width - windowSize.Width) / 2;
                 int y = (viewportSize.Height - windowSize.Height) / 2;
 
-                await WindowInterop.SetPosition(ElementId, x, y, linked).NoSync();
+                await WindowInterop.SetPosition(ElementId, x, y, linked);
             }
             catch (Exception ex)
             {
@@ -231,14 +231,14 @@
     {
         if (firstRender)
         {
-            await WindowInterop.Initialize(MergedOptions.UseCdn, CancellationToken).NoSync();
+            await WindowInterop.Initialize(MergedOptions.UseCdn, CancellationToken);
             _dotNetRef = DotNetObjectReference.Create(this);
 
             // Wait a bit to ensure the element is in the DOM
             await Task.Delay(10, CancellationToken);
 
-            await WindowInterop.Create(ElementId, MergedOptions, CancellationToken).NoSync();
-            await WindowInterop.SetCallbacks(ElementId, _dotNetRef!).NoSync();
+            await WindowInterop.Create(ElementId, MergedOptions, CancellationToken);
+            await WindowInterop.SetCallbacks(ElementId, _dotNetRef!);
 
             // Set initialized after everything is done
             _initialized = true;
@@ -258,10 +258,10 @@
                 {
                     if (MergedOptions.CenterOnShow)
                     {
-                        await WindowInterop.CenterInViewport(ElementId, linked).NoSync();
+                        await WindowInterop.CenterInViewport(ElementId, linked);
                     }
 
-                    await WindowInterop.Show(ElementId, linked).NoSync();
+                    await WindowInterop.Show(ElementId, linked);
                     _visible = true;
                     StateHasChanged();
                 }
@@ -284,7 +284,7 @@
             CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
             using (cts)
-                await WindowInterop.Hide(ElementId, linked).NoSync();
+                await WindowInterop.Hide(ElementId, linked);
             _visible = false;
         }
     }
@@ -296,7 +296,7 @@
             CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
             using (cts)
-                await WindowInterop.Toggle(ElementId, linked).NoSync();
+                await WindowInterop.Toggle(ElementId, linked);
             _visible = !_visible;
         }
     }
@@ -308,7 +308,7 @@
             CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
             using (cts)
-                await WindowInterop.Close(ElementId, linked).NoSync();
+                await WindowInterop.Close(ElementId, linked);
             _visible = false;
         }
     }
@@ -320,7 +320,7 @@
             CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
             using (cts)
-                return await WindowInterop.GetPosition(ElementId, linked).NoSync();
+                return await WindowInterop.GetPosition(ElementId, linked);
         }
 
         return (0, 0);
@@ -333,7 +333,7 @@
             CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
             using (cts)
-                await WindowInterop.SetPosition(ElementId, x, y, linked).NoSync();
+                await WindowInterop.SetPosition(ElementId, x, y, linked);
         }
     }
 
@@ -344,7 +344,7 @@
             CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
             using (cts)
-                return await WindowInterop.GetSize(ElementId, linked).NoSync();
+                return await WindowInterop.GetSize(ElementId, linked);
         }
 
         return new FloatingWindowSize {Width = 0, Height = 0};
@@ -357,7 +357,7 @@
             CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
             using (cts)
-                await WindowInterop.SetSize(ElementId, width, height, linked).NoSync();
+                await WindowInterop.SetSize(ElementId, width, height, linked);
         }
     }
 
@@ -367,7 +367,7 @@
         CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
         using (cts)
-            await WindowInterop.Destroy(ElementId, linked).NoSync();
+            await WindowInterop.Destroy(ElementId, linked);
     }
 
     private string GetWindowStyles()
@@ -458,9 +458,9 @@
 
     public override async ValueTask DisposeAsync()
     {
-        await base.DisposeAsync().NoSync();
+        await base.DisposeAsync();
 
-        await WindowInterop.Destroy(ElementId, CancellationToken.None).NoSync();
+        await WindowInterop.Destroy(ElementId, CancellationToken.None);
         _dotNetRef?.Dispose();
     }
 

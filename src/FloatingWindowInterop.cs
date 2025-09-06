@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
 using Soenneker.Blazor.Floating.Windows.Abstract;
@@ -34,25 +34,25 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
             {
                 await _resourceLoader.LoadScriptAndWaitForVariable("https://cdn.jsdelivr.net/npm/@floating-ui/core@1.7.2/dist/floating-ui.core.umd.min.js",
                                          "FloatingUICore", "sha256-OhWDdFHrIg8eNZaNgWL2ax7tjKNFOBQq3WErqxfHdlQ=", cancellationToken: token)
-                                     .NoSync();
+                                     ;
 
                 await _resourceLoader.LoadScriptAndWaitForVariable("https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.7.2/dist/floating-ui.dom.umd.min.js",
                                          "FloatingUIDOM", "sha256-cycZmidLw+l9uWDr4bUhL26YMJg1G6aM0AnUEPG9sME=", cancellationToken: token)
-                                     .NoSync();
+                                     ;
             }
             else
             {
                 await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.core.umd.min.js",
                                          "FloatingUICore", cancellationToken: token)
-                                     .NoSync();
+                                     ;
 
                 await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.dom.umd.min.js", "FloatingUIDOM",
                                          cancellationToken: token)
-                                     .NoSync();
+                                     ;
             }
 
-            await _resourceLoader.LoadStyle("_content/Soenneker.Blazor.Floating.Windows/css/floatingwindow.css", cancellationToken: token).NoSync();
-            await _resourceLoader.ImportModuleAndWaitUntilAvailable(_module, _moduleName, 100, token).NoSync();
+            await _resourceLoader.LoadStyle("_content/Soenneker.Blazor.Floating.Windows/css/floatingwindow.css", cancellationToken: token);
+            await _resourceLoader.ImportModuleAndWaitUntilAvailable(_module, _moduleName, 100, token);
 
             return new object();
         });
@@ -65,11 +65,11 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Create(string id, FloatingWindowOptions options, CancellationToken cancellationToken = default)
     {
-        await _scriptInitializer.Init(cancellationToken, options.UseCdn).NoSync();
+        await _scriptInitializer.Init(cancellationToken, options.UseCdn);
 
         string json = JsonUtil.Serialize(options)!;
 
-        await _jSRuntime.InvokeVoidAsync($"{_moduleName}.create", cancellationToken, id, json).NoSync();
+        await _jSRuntime.InvokeVoidAsync($"{_moduleName}.create", cancellationToken, id, json);
     }
 
     public ValueTask SetCallbacks(string id, DotNetObjectReference<FloatingWindow> dotNetRef)
@@ -139,7 +139,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask DisposeAsync()
     {
-        await _resourceLoader.DisposeModule(_module).NoSync();
-        await _scriptInitializer.DisposeAsync().NoSync();
+        await _resourceLoader.DisposeModule(_module);
+        await _scriptInitializer.DisposeAsync();
     }
 }

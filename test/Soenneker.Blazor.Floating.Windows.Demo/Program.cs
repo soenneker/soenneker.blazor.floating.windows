@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Blazorise;
@@ -47,7 +47,7 @@ public sealed class Program
 
             SetGlobalLogger(jsRuntime);
 
-            await host.RunAsync().NoSync();
+            await host.RunAsync();
         }
         catch (Exception e)
         {
@@ -56,7 +56,7 @@ public sealed class Program
         }
         finally
         {
-            await Log.CloseAndFlushAsync().NoSync();
+            await Log.CloseAndFlushAsync();
         }
     }
 
