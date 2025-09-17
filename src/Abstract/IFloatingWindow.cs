@@ -11,7 +11,7 @@ namespace Soenneker.Blazor.Floating.Windows.Abstract;
 /// <summary>
 /// Represents a floating window component instance with customizable appearance, behavior, and lifecycle methods.
 /// </summary>
-public interface IFloatingWindow : ICancellableComponent
+public interface IFloatingWindow : ICancellableElement
 {
     /// <summary>
     /// The unique identifier used internally for window registration and DOM references.
@@ -22,11 +22,6 @@ public interface IFloatingWindow : ICancellableComponent
     /// Optional parameters applied to the window container.
     /// </summary>
     Dictionary<string, object?>? WindowAttributes { get; set; }
-
-    /// <summary>
-    /// The main child content that will be rendered inside the floating window.
-    /// </summary>
-    RenderFragment ChildContent { get; set; }
 
     /// <summary>
     /// Callback triggered when the window becomes visible.
@@ -74,24 +69,9 @@ public interface IFloatingWindow : ICancellableComponent
     bool? ShowTitleBar { get; set; }
 
     /// <summary>
-    /// Override: The title text for the window.
-    /// </summary>
-    string? Title { get; set; }
-
-    /// <summary>
     /// Override: Whether the window is enabled and active.
     /// </summary>
     bool? Enabled { get; set; }
-
-    /// <summary>
-    /// Override: Initial width of the window in pixels.
-    /// </summary>
-    int? Width { get; set; }
-
-    /// <summary>
-    /// Override: Initial height of the window in pixels.
-    /// </summary>
-    int? Height { get; set; }
 
     /// <summary>
     /// Override: Initial X position of the window.

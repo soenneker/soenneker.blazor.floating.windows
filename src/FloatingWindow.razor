@@ -3,7 +3,6 @@
 @using Soenneker.Blazor.Extensions.EventCallback
 @using Soenneker.Blazor.Floating.Windows.Abstract
 @using Soenneker.Blazor.Floating.Windows.Options
-@using Soenneker.Extensions.ValueTask
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.Floating.Windows.Dtos
@@ -12,7 +11,7 @@
 @inject IFloatingWindowInterop WindowInterop
 @inject ILogger<FloatingWindow> Logger
 
-@inherits Soenneker.Quark.Components.Cancellable.CancellableComponent
+@inherits Soenneker.Quark.Components.Cancellable.CancellableElement
 @implements IFloatingWindow
 
 <div id="@ElementId"
@@ -62,9 +61,6 @@
     public Dictionary<string, object?>? WindowAttributes { get; set; }
 
     [Parameter]
-    public RenderFragment ChildContent { get; set; } = null!;
-
-    [Parameter]
     public RenderFragment? HeaderContent { get; set; }
 
     [Parameter]
@@ -98,16 +94,7 @@
     public bool? ShowTitleBar { get; set; }
 
     [Parameter]
-    public string? Title { get; set; }
-
-    [Parameter]
     public bool? Enabled { get; set; }
-
-    [Parameter]
-    public int? Width { get; set; }
-
-    [Parameter]
-    public int? Height { get; set; }
 
     [Parameter]
     public int? InitialX { get; set; }
@@ -140,8 +127,6 @@
         ShowTitleBar = ShowTitleBar ?? Options.ShowTitleBar,
         Title = Title ?? Options.Title,
         Enabled = Enabled ?? Options.Enabled,
-        Width = Width ?? Options.Width,
-        Height = Height ?? Options.Height,
         InitialX = InitialX ?? Options.InitialX,
         InitialY = InitialY ?? Options.InitialY,
         MinWidth = Options.MinWidth,
@@ -231,6 +216,9 @@
     {
         if (firstRender)
         {
+            // if (Height.HasValue)
+            //     MergedOptions.Height = Height.Value;
+
             await WindowInterop.Initialize(MergedOptions.UseCdn, CancellationToken);
             _dotNetRef = DotNetObjectReference.Create(this);
 

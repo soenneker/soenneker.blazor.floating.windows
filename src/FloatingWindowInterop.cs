@@ -5,7 +5,6 @@ using Soenneker.Blazor.Floating.Windows.Abstract;
 using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
 using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
-using Soenneker.Extensions.ValueTask;
 using Soenneker.Utils.AsyncSingleton;
 using Soenneker.Utils.Json;
 

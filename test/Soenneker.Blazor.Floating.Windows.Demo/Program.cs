@@ -1,8 +1,6 @@
 using System;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Blazorise;
-using Blazorise.Bootstrap;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,8 +9,6 @@ using Microsoft.JSInterop;
 using Serilog;
 using Serilog.Debugging;
 using Soenneker.Blazor.Floating.Windows.Registrars;
-using Soenneker.Extensions.Task;
-using Soenneker.Extensions.ValueTask;
 using Soenneker.Serilog.Sinks.Browser.Blazor.Registrars;
 
 namespace Soenneker.Blazor.Floating.Windows.Demo;
@@ -36,10 +32,6 @@ public sealed class Program
             });
 
             builder.Services.AddFloatingWindowAsScoped();
-
-            builder.Services
-                .AddBlazorise()
-                .AddBootstrapProviders();
 
             WebAssemblyHost host = builder.Build();
 
