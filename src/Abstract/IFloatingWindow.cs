@@ -1,28 +1,17 @@
 using Microsoft.AspNetCore.Components;
 using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Soenneker.Quark.Components.Cancellable.Abstract;
+using Soenneker.Quark.Components.Core.Cancellable.Abstract;
 
 namespace Soenneker.Blazor.Floating.Windows.Abstract;
 
 /// <summary>
 /// Represents a floating window component instance with customizable appearance, behavior, and lifecycle methods.
 /// </summary>
-public interface IFloatingWindow : ICancellableElement
+public interface IFloatingWindow : ICoreCancellableElement
 {
-    /// <summary>
-    /// The unique identifier used internally for window registration and DOM references.
-    /// </summary>
-    string ElementId { get; set; }
-
-    /// <summary>
-    /// Optional parameters applied to the window container.
-    /// </summary>
-    Dictionary<string, object?>? WindowAttributes { get; set; }
-
     /// <summary>
     /// Callback triggered when the window becomes visible.
     /// </summary>
