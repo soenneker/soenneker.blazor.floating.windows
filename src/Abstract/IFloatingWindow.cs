@@ -3,7 +3,7 @@ using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
 using System.Threading;
 using System.Threading.Tasks;
-using Soenneker.Quark.Components.Core.Cancellable.Abstract;
+using Soenneker.Quark;
 
 namespace Soenneker.Blazor.Floating.Windows.Abstract;
 
