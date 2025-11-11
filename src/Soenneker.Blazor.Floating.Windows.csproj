@@ -48,7 +48,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Blazor.Extensions.EventCallback" Version="4.0.427" />
+        <PackageReference Include="Soenneker.Blazor.Extensions.EventCallback" Version="4.0.428" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1519" />
         <PackageReference Include="Soenneker.Extensions.CancellationTokens" Version="4.0.5" />
         <PackageReference Include="Soenneker.Extensions.String" Version="4.0.568" />
