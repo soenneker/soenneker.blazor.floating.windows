@@ -25,28 +25,28 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         _jSRuntime = jSRuntime;
         _resourceLoader = resourceLoader;
 
-        _scriptInitializer = new AsyncInitializer<bool>(async (useCdn, token) =>
+        _scriptInitializer = new AsyncInitializer<bool>(Initialize);
+    }
+
+    private async ValueTask Initialize(bool useCdn, CancellationToken token)
+    {
+        if (useCdn)
         {
-            if (useCdn)
-            {
-                await _resourceLoader.LoadScriptAndWaitForVariable("https://cdn.jsdelivr.net/npm/@floating-ui/core@1.7.2/dist/floating-ui.core.umd.min.js",
-                    "FloatingUICore", "sha256-OhWDdFHrIg8eNZaNgWL2ax7tjKNFOBQq3WErqxfHdlQ=", cancellationToken: token);
+            await _resourceLoader.LoadScriptAndWaitForVariable("https://cdn.jsdelivr.net/npm/@floating-ui/core@1.7.2/dist/floating-ui.core.umd.min.js",
+                "FloatingUICore", "sha256-OhWDdFHrIg8eNZaNgWL2ax7tjKNFOBQq3WErqxfHdlQ=", cancellationToken: token);
+            await _resourceLoader.LoadScriptAndWaitForVariable("https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.7.2/dist/floating-ui.dom.umd.min.js",
+                "FloatingUIDOM", "sha256-cycZmidLw+l9uWDr4bUhL26YMJg1G6aM0AnUEPG9sME=", cancellationToken: token);
+        }
+        else
+        {
+            await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.core.umd.min.js",
+                "FloatingUICore", cancellationToken: token);
+            await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.dom.umd.min.js", "FloatingUIDOM",
+                cancellationToken: token);
+        }
 
-                await _resourceLoader.LoadScriptAndWaitForVariable("https://cdn.jsdelivr.net/npm/@floating-ui/dom@1.7.2/dist/floating-ui.dom.umd.min.js",
-                    "FloatingUIDOM", "sha256-cycZmidLw+l9uWDr4bUhL26YMJg1G6aM0AnUEPG9sME=", cancellationToken: token);
-            }
-            else
-            {
-                await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.core.umd.min.js",
-                    "FloatingUICore", cancellationToken: token);
-
-                await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.dom.umd.min.js", "FloatingUIDOM",
-                    cancellationToken: token);
-            }
-
-            await _resourceLoader.LoadStyle("_content/Soenneker.Blazor.Floating.Windows/css/floatingwindow.css", cancellationToken: token);
-            await _resourceLoader.ImportModuleAndWaitUntilAvailable(_module, _moduleName, 100, token);
-        });
+        await _resourceLoader.LoadStyle("_content/Soenneker.Blazor.Floating.Windows/css/floatingwindow.css", cancellationToken: token);
+        await _resourceLoader.ImportModuleAndWaitUntilAvailable(_module, _moduleName, 100, token);
     }
 
     public ValueTask Initialize(bool useCdn = true, CancellationToken cancellationToken = default)
@@ -60,72 +60,72 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         string json = JsonUtil.Serialize(options)!;
 
-        await _jSRuntime.InvokeVoidAsync($"{_moduleName}.create", cancellationToken, id, json);
+        await _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.create", cancellationToken, id, json);
     }
 
     public ValueTask SetCallbacks(string id, DotNetObjectReference<FloatingWindow> dotNetRef)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.setCallbacks", id, dotNetRef);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.setCallbacks", id, dotNetRef);
     }
 
     public ValueTask Destroy(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.destroy", cancellationToken, id);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.destroy", cancellationToken, id);
     }
 
     public ValueTask Show(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.show", cancellationToken, id);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.show", cancellationToken, id);
     }
 
     public ValueTask Hide(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.hide", cancellationToken, id);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.hide", cancellationToken, id);
     }
 
     public ValueTask Toggle(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.toggle", cancellationToken, id);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.toggle", cancellationToken, id);
     }
 
     public ValueTask Close(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.close", cancellationToken, id);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.close", cancellationToken, id);
     }
 
     public ValueTask<(int x, int y)> GetPosition(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<(int x, int y)>($"{_moduleName}.getPosition", cancellationToken, id);
+        return _jSRuntime.InvokeAsync<(int x, int y)>("FloatingWindowInterop.getPosition", cancellationToken, id);
     }
 
     public ValueTask SetPosition(string id, int x, int y, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.setPosition", cancellationToken, id, x, y);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.setPosition", cancellationToken, id, x, y);
     }
 
     public ValueTask<FloatingWindowSize> GetSize(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<FloatingWindowSize>($"{_moduleName}.getSize", cancellationToken, id);
+        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getSize", cancellationToken, id);
     }
 
     public ValueTask SetSize(string id, int width, int height, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.setSize", cancellationToken, id, width, height);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.setSize", cancellationToken, id, width, height);
     }
 
     public ValueTask BringToFront(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.bringToFront", cancellationToken, id);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.bringToFront", cancellationToken, id);
     }
 
     public ValueTask<FloatingWindowSize> GetViewportSize(CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<FloatingWindowSize>($"{_moduleName}.getViewportSize", cancellationToken);
+        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getViewportSize", cancellationToken);
     }
 
     public ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync($"{_moduleName}.centerInViewport", cancellationToken, id);
+        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.centerInViewport", cancellationToken, id);
     }
 
     public async ValueTask DisposeAsync()
