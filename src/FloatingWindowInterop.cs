@@ -25,10 +25,10 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         _jSRuntime = jSRuntime;
         _resourceLoader = resourceLoader;
 
-        _scriptInitializer = new AsyncInitializer<bool>(Initialize);
+        _scriptInitializer = new AsyncInitializer<bool>(InitializeScripts);
     }
 
-    private async ValueTask Initialize(bool useCdn, CancellationToken token)
+    private async ValueTask InitializeScripts(bool useCdn, CancellationToken token)
     {
         if (useCdn)
         {
@@ -39,8 +39,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         }
         else
         {
-            await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.core.umd.min.js",
-                "FloatingUICore", cancellationToken: token);
+            await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.core.umd.min.js", "FloatingUICore",
+                cancellationToken: token);
             await _resourceLoader.LoadScriptAndWaitForVariable("_content/Soenneker.Blazor.Floating.Windows/js/floating-ui.dom.umd.min.js", "FloatingUIDOM",
                 cancellationToken: token);
         }
