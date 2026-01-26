@@ -6,6 +6,8 @@ using Soenneker.Blazor.Floating.Windows.Abstract;
 using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
 using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
+using Soenneker.Extensions.CancellationTokens;
+using Soenneker.Utils.CancellationScopes;
 using Soenneker.Utils.Json;
 
 namespace Soenneker.Blazor.Floating.Windows;
@@ -19,6 +21,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     private const string _module = "Soenneker.Blazor.Floating.Windows/js/floatingwindowinterop.js";
     private const string _moduleName = "FloatingWindowInterop";
+
+    private readonly CancellationScope _cancellationScope = new();
 
     public FloatingWindowInterop(IJSRuntime jSRuntime, IResourceLoader resourceLoader)
     {
@@ -51,16 +55,24 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public ValueTask Initialize(bool useCdn = true, CancellationToken cancellationToken = default)
     {
-        return _scriptInitializer.Init(useCdn, cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _scriptInitializer.Init(useCdn, linked);
     }
 
     public async ValueTask Create(string id, FloatingWindowOptions options, CancellationToken cancellationToken = default)
     {
-        await _scriptInitializer.Init(options.UseCdn, cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        string json = JsonUtil.Serialize(options)!;
+        using (source)
+        {
+            await _scriptInitializer.Init(options.UseCdn, linked);
 
-        await _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.create", cancellationToken, id, json);
+            string json = JsonUtil.Serialize(options)!;
+
+            await _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.create", linked, id, json);
+        }
     }
 
     public ValueTask SetCallbacks(string id, DotNetObjectReference<FloatingWindow> dotNetRef)
@@ -70,67 +82,104 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public ValueTask Destroy(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.destroy", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.destroy", linked, id);
     }
 
     public ValueTask Show(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.show", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.show", linked, id);
     }
 
     public ValueTask Hide(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.hide", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.hide", linked, id);
     }
 
     public ValueTask Toggle(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.toggle", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.toggle", linked, id);
     }
 
     public ValueTask Close(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.close", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.close", linked, id);
     }
 
     public ValueTask<(int x, int y)> GetPosition(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<(int x, int y)>("FloatingWindowInterop.getPosition", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeAsync<(int x, int y)>("FloatingWindowInterop.getPosition", linked, id);
     }
 
     public ValueTask SetPosition(string id, int x, int y, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.setPosition", cancellationToken, id, x, y);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.setPosition", linked, id, x, y);
     }
 
     public ValueTask<FloatingWindowSize> GetSize(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getSize", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getSize", linked, id);
     }
 
     public ValueTask SetSize(string id, int width, int height, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.setSize", cancellationToken, id, width, height);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.setSize", linked, id, width, height);
     }
 
     public ValueTask BringToFront(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.bringToFront", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.bringToFront", linked, id);
     }
 
     public ValueTask<FloatingWindowSize> GetViewportSize(CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getViewportSize", cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeAsync<FloatingWindowSize>("FloatingWindowInterop.getViewportSize", linked);
     }
 
     public ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default)
     {
-        return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.centerInViewport", cancellationToken, id);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _jSRuntime.InvokeVoidAsync("FloatingWindowInterop.centerInViewport", linked, id);
     }
 
     public async ValueTask DisposeAsync()
     {
         await _resourceLoader.DisposeModule(_module);
         await _scriptInitializer.DisposeAsync();
+        await _cancellationScope.DisposeAsync();
     }
 }
