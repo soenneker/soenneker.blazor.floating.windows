@@ -1,7 +1,8 @@
-﻿[![](https://img.shields.io/nuget/v/soenneker.blazor.floating.windows.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.blazor.floating.windows/)
+[![](https://img.shields.io/nuget/v/soenneker.blazor.floating.windows.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.blazor.floating.windows/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.blazor.floating.windows/publish-package.yml?style=for-the-badge)](https://github.com/soenneker/soenneker.blazor.floating.windows/actions/workflows/publish-package.yml)
 [![](https://img.shields.io/nuget/dt/soenneker.blazor.floating.windows.svg?style=for-the-badge)](https://www.nuget.org/packages/soenneker.blazor.floating.windows/)
 [![](https://img.shields.io/badge/Demo-Live-blueviolet?style=for-the-badge&logo=github)](https://soenneker.github.io/soenneker.blazor.floating.windows/)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.blazor.floating.windows/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.blazor.floating.windows/actions/workflows/codeql.yml)
 
 # <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" alt="Logo" width="48"/> Soenneker.Blazor.Floating.Windows
 
@@ -10,19 +11,19 @@
 ---
 
 
-## ✨ Features
+## ? Features
 
-- 🪟 **Draggable & Resizable** — Move and resize windows with smooth, modern UX
-- 🎨 **Fully Customizable** — Colors, fonts, borders, shadows, and more
-- 🌗 **Custom theming** — Built-in typed support
-- 🖼️ **Multiple Windows** — Manage, stack, and focus with z-index
-- 📱 **Responsive** — Works on desktop and mobile
-- ♿ **Accessible** — ARIA labels, keyboard navigation
-- ⚡ **Event Callbacks** — React to show, hide, drag, resize, and more
+- ?? **Draggable & Resizable** � Move and resize windows with smooth, modern UX
+- ?? **Fully Customizable** � Colors, fonts, borders, shadows, and more
+- ?? **Custom theming** � Built-in typed support
+- ??? **Multiple Windows** � Manage, stack, and focus with z-index
+- ?? **Responsive** � Works on desktop and mobile
+- ? **Accessible** � ARIA labels, keyboard navigation
+- ? **Event Callbacks** � React to show, hide, drag, resize, and more
 
 ---
 
-## 🚀 Installation
+## ?? Installation
 
 ```bash
 dotnet add package Soenneker.Blazor.Floating.Windows
@@ -41,7 +42,7 @@ builder.Services.AddFloatingWindowAsScoped();
 
 ---
 
-## 🛠️ Basic Usage
+## ??? Basic Usage
 
 ```razor
 <FloatingWindow Title="My Window" Width="400" Height="300">
@@ -55,7 +56,7 @@ builder.Services.AddFloatingWindowAsScoped();
 
 ---
 
-## 🎨 Theming & Styling
+## ?? Theming & Styling
 
 **Built-in themes:**
 ```razor
@@ -86,7 +87,7 @@ builder.Services.AddFloatingWindowAsScoped();
 
 ---
 
-## 💡 Advanced Example
+## ?? Advanced Example
 
 ```razor
 <FloatingWindow @ref="myWindow"
@@ -127,7 +128,7 @@ builder.Services.AddFloatingWindowAsScoped();
 
 ---
 
-## ⚙️ API Overview
+## ?? API Overview
 
 ### Properties
 | Property | Type | Default | Description |
