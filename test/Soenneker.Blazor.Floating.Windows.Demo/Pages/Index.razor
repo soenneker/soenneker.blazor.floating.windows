@@ -4,104 +4,70 @@
 @using Soenneker.Blazor.Floating.Windows.Options
 
 @inject ILogger<Index> Logger
-@inject IJSRuntime JS
 
-@* Add Font Awesome for GitHub icon *@
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
+<PageTitle>Floating Windows Demo</PageTitle>
 
-<div class="github-topright">
-    <a href="https://github.com/soenneker/soenneker.blazor.floating.windows" target="_blank" title="View on GitHub">
-        <i class="fab fa-github"></i>
-    </a>
-</div>
+<Div Space="Space.Y.Is8">
+    <Div Space="Space.Y.Is3">
+        <H2 TextSize="TextSize.Xl" FontWeight="FontWeight.Semibold">Examples</H2>
+        <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">
+            Open sample windows and try drag, resize, and themed chrome.
+        </Paragraph>
+        <Grid Columns="Columns.Is1.OnMd.Is2.OnLg.Is3" Gap="Gap.Is3">
+            <Button OnClick="ShowBasicWindow">Basic window</Button>
+            <Button OnClick="ShowCustomWindow" Variant="ButtonVariant.Secondary">Custom styled</Button>
+            <Button OnClick="ShowCenteredWindow" Variant="ButtonVariant.Outline">Centered</Button>
+            <Button OnClick="ShowDarkWindow" Variant="ButtonVariant.Outline">Dark theme</Button>
+            <Button OnClick="ShowInteractiveWindow" Variant="ButtonVariant.Secondary">Interactive</Button>
+            <Button OnClick="ShowDataWindow" Variant="ButtonVariant.Secondary">Data table</Button>
+        </Grid>
+        <Div Display="Display.Flex" Flex="Flex.Wrap" Gap="Gap.Is2" Margin="Margin.Is3.FromTop">
+            <Button OnClick="ShowAllWindows" Variant="ButtonVariant.Outline">Show all</Button>
+            <Button OnClick="HideAllWindows" Variant="ButtonVariant.Outline">Hide all</Button>
+        </Div>
+    </Div>
 
-<style>
-    .github-topright {
-        position: fixed;
-        top: 1.2rem;
-        right: 1.5rem;
-        z-index: 2000;
-    }
-    .github-topright a {
-        color: #24292f;
-        font-size: 2.2rem;
-        display: inline-block;
-        transition: color 0.2s;
-        text-decoration: none;
-        background: none;
-        border-radius: 0;
-        box-shadow: none;
-        padding: 0;
-    }
-    .github-topright a:hover {
-        color: #0366d6;
-        background: none;
-    }
-</style>
+    <Div Space="Space.Y.Is3">
+        <H2 TextSize="TextSize.Xl" FontWeight="FontWeight.Semibold">Features</H2>
+        <Grid Columns="Columns.Is1.OnMd.Is2" Gap="Gap.Is4">
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Space="Space.Y.Is2">
+                <Div TextSize="TextSize.Lg">Draggable</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Drag by the title bar to reposition.</Paragraph>
+            </Div>
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Space="Space.Y.Is2">
+                <Div TextSize="TextSize.Lg">Resizable</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Resize from edges and corners.</Paragraph>
+            </Div>
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Space="Space.Y.Is2">
+                <Div TextSize="TextSize.Lg">Theming</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Light, dark, and custom title bar styles.</Paragraph>
+            </Div>
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Space="Space.Y.Is2">
+                <Div TextSize="TextSize.Lg">Layering</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Z-order updates when windows are activated.</Paragraph>
+            </Div>
+        </Grid>
+    </Div>
 
-<div class="hero-section">
-    <div class="hero-content">
-        <div class="logo-container">
-            <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" alt="Logo" class="hero-logo" />
-        </div>
-        <h1 class="hero-title">Soenneker.Blazor.Floating.Windows</h1>
-        <p class="hero-subtitle">Powerful, customizable floating windows for Blazor applications</p>
-        <div class="hero-badges">
-            <span class="badge">🚀 Modern</span>
-            <span class="badge">⚡ Fast</span>
-            <span class="badge">🎨 Customizable</span>
-            <span class="badge">📱 Responsive</span>
-        </div>
-    </div>
-</div>
-
-<div class="demo-container">
-    <div class="demo-section">
-        <h2 class="section-title">🎮 Interactive Examples</h2>
-        <p class="section-description">Click the buttons below to see different floating window configurations in action.</p>
-        <div class="demo-controls">
-            <button @onclick="ShowBasicWindow" class="demo-button primary"><span class="button-icon">🪟</span>Basic Window</button>
-            <button @onclick="ShowCustomWindow" class="demo-button secondary"><span class="button-icon">🎨</span>Custom Styled</button>
-            <button @onclick="ShowCenteredWindow" class="demo-button success"><span class="button-icon">🎯</span>Centered Window</button>
-            <button @onclick="ShowDarkWindow" class="demo-button dark"><span class="button-icon">🌙</span>Dark Theme</button>
-            <button @onclick="ShowInteractiveWindow" class="demo-button warning"><span class="button-icon">⚡</span>Interactive Demo</button>
-            <button @onclick="ShowDataWindow" class="demo-button info"><span class="button-icon">📊</span>Data Display</button>
-            <button @onclick="ShowAllWindows" class="action-button show-all"><span class="button-icon">📂</span>Show All Windows</button>
-            <button @onclick="HideAllWindows" class="action-button hide-all"><span class="button-icon">🗂️</span>Hide All Windows</button>
-        </div>
-    </div>
-    <div class="demo-section">
-        <h2 class="section-title">✨ Features Showcase</h2>
-        <div class="features-grid">
-            <div class="feature-card"><div class="feature-icon">🎯</div><h3>Draggable Windows</h3><p>Drag windows by the title bar to reposition them anywhere on the screen.</p></div>
-            <div class="feature-card"><div class="feature-icon">📏</div><h3>Resizable Windows</h3><p>Resize windows by dragging the edges and corners for perfect fit.</p></div>
-            <div class="feature-card"><div class="feature-icon">🎨</div><h3>Customizable Themes</h3><p>Light, dark, and custom themes with full CSS customization support.</p></div>
-            <div class="feature-card"><div class="feature-icon">📱</div><h3>Responsive Design</h3><p>Windows adapt to different screen sizes and maintain usability.</p></div>
-            <div class="feature-card"><div class="feature-icon">🔒</div><h3>Viewport Constraints</h3><p>Windows stay within the viewport bounds for better user experience.</p></div>
-            <div class="feature-card"><div class="feature-icon">⚡</div><h3>Z-Index Management</h3><p>Automatic z-index management ensures proper window layering.</p></div>
-            <div class="feature-card"><div class="feature-icon">🔄</div><h3>Dynamic Auto Resize</h3><p>Windows can automatically resize to fit their content as it grows or shrinks.</p></div>
-        </div>
-    </div>
-    <div class="demo-section">
-        <h2 class="section-title">📚 Code Examples</h2>
-        <div class="code-examples">
-            <div class="code-tabs">
-                <button class="tab-button @(activeTab == "basic" ? "active" : "")" @onclick="SetTabBasic">Basic Usage</button>
-                <button class="tab-button @(activeTab == "custom" ? "active" : "")" @onclick="SetTabCustom">Custom Styling</button>
-                <button class="tab-button @(activeTab == "events" ? "active" : "")" @onclick="SetTabEvents">Event Handling</button>
-            </div>
-            <div class="code-content">
-                @if (activeTab == "basic")
-                {
-                    <pre class="code-block"><code>&lt;FloatingWindow Title="My Window" 
-                Width="400" Height="300"
-                InitialX="50" InitialY="50"&gt;
+    <Div Space="Space.Y.Is3">
+        <H2 TextSize="TextSize.Xl" FontWeight="FontWeight.Semibold">Code samples</H2>
+        <Div Display="Display.Flex" Flex="Flex.Wrap" Gap="Gap.Is2">
+            <Button OnClick="SetTabBasic" Variant="@(activeTab == "basic" ? ButtonVariant.Secondary : ButtonVariant.Outline)">Basic usage</Button>
+            <Button OnClick="SetTabCustom" Variant="@(activeTab == "custom" ? ButtonVariant.Secondary : ButtonVariant.Outline)">Custom styling</Button>
+            <Button OnClick="SetTabEvents" Variant="@(activeTab == "events" ? ButtonVariant.Secondary : ButtonVariant.Outline)">Events</Button>
+        </Div>
+        <Div Class="fw-code-shell rounded-lg border border-border bg-muted/30 p-4">
+            @if (activeTab == "basic")
+            {
+                <pre class="fw-code-block"><code>&lt;FloatingWindow Title="My Window"
+        Width="400" Height="300"
+        InitialX="50" InitialY="50"&gt;
     &lt;div&gt;Your content here&lt;/div&gt;
 &lt;/FloatingWindow&gt;</code></pre>
-                }
-                else if (activeTab == "custom")
-                {
-                    <pre class="code-block"><code>var customTheme = new FloatingWindowStyleOptions
+            }
+            else if (activeTab == "custom")
+            {
+                <pre class="fw-code-block"><code>var customTheme = new FloatingWindowStyleOptions
 {
     TitleBarBackgroundGradient = "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
     TitleBarTextColor = "#ffffff",
@@ -111,29 +77,41 @@
 &lt;FloatingWindow StyleOptions="customTheme"&gt;
     &lt;div&gt;Custom styled content&lt;/div&gt;
 &lt;/FloatingWindow&gt;</code></pre>
-                }
-                else if (activeTab == "events")
-                {
-                    <pre class="code-block"><code>&lt;FloatingWindow OnShow="OnWindowShow"
-                OnHide="OnWindowHide"
-                OnDragStart="OnDragStart"
-                OnDragEnd="OnDragEnd"&gt;
+            }
+            else if (activeTab == "events")
+            {
+                <pre class="fw-code-block"><code>&lt;FloatingWindow OnShow="OnWindowShow"
+        OnHide="OnWindowHide"
+        OnDragStart="OnDragStart"
+        OnDragEnd="OnDragEnd"&gt;
     &lt;div&gt;Event-driven content&lt;/div&gt;
 &lt;/FloatingWindow&gt;</code></pre>
-                }
-            </div>
-        </div>
-    </div>
-    <div class="demo-section">
-        <h2 class="section-title">📈 Live Statistics</h2>
-        <div class="stats-grid">
-            <div class="stat-card"><div class="stat-number">@windowShowCount</div><div class="stat-label">Windows Shown</div></div>
-            <div class="stat-card"><div class="stat-number">@dragCount</div><div class="stat-label">Drag Operations</div></div>
-            <div class="stat-card"><div class="stat-number">@activeWindows</div><div class="stat-label">Active Windows</div></div>
-            <div class="stat-card"><div class="stat-number">@totalInteractions</div><div class="stat-label">Total Interactions</div></div>
-        </div>
-    </div>
-</div>
+            }
+        </Div>
+    </Div>
+
+    <Div Space="Space.Y.Is3">
+        <H2 TextSize="TextSize.Xl" FontWeight="FontWeight.Semibold">Activity</H2>
+        <Grid Columns="Columns.Is2.OnMd.Is4" Gap="Gap.Is3">
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Class="text-center">
+                <Div TextSize="TextSize.TwoXl" FontWeight="FontWeight.Bold">@windowShowCount</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Windows shown</Paragraph>
+            </Div>
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Class="text-center">
+                <Div TextSize="TextSize.TwoXl" FontWeight="FontWeight.Bold">@dragCount</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Drag operations</Paragraph>
+            </Div>
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Class="text-center">
+                <Div TextSize="TextSize.TwoXl" FontWeight="FontWeight.Bold">@activeWindows</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Active windows</Paragraph>
+            </Div>
+            <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Class="text-center">
+                <Div TextSize="TextSize.TwoXl" FontWeight="FontWeight.Bold">@totalInteractions</Div>
+                <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Interactions</Paragraph>
+            </Div>
+        </Grid>
+    </Div>
+</Div>
 
 <!-- Basic Window -->
 <FloatingWindow @ref="basicWindow"
@@ -146,10 +124,9 @@
                 OnShow="OnWindowShow"
                 OnHide="OnWindowHide"
                 OnDragStart="OnDragStart"
-                OnDragEnd="OnDragEnd",
+                OnDragEnd="OnDragEnd"
                 Resizable="false"
-AutoSizeToContent="true"
->
+                AutoSizeToContent="true">
     <div class="window-content">
         <h3>Basic Floating Window</h3>
         <p>This is a basic floating window with default light theme styling.</p>
@@ -326,7 +303,6 @@ AutoSizeToContent="true"
     private FloatingWindow? darkWindow;
     private FloatingWindow? interactiveWindow;
     private FloatingWindow? dataWindow;
-    private FloatingWindow? dynamicAutoSizeWindow;
 
     private string activeTab = "basic";
     private int windowShowCount;
