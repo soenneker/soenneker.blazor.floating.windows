@@ -1,11 +1,6 @@
-﻿export class FloatingWindowInterop {
-    constructor() {
-        this.windows = new Map();
-        this.activeWindow = null;
-        this.nextZIndex = 1000;
-    }
-
-    async create(id, optionsJson) {
+const interop = (() => {
+    const instance = {};
+    instance.create = async function(id, optionsJson) {
         const options = JSON.parse(optionsJson);
 
         const window = document.getElementById(id);
@@ -92,9 +87,9 @@
         if (options.resizable) {
             this.setupResizing(id);
         }
-    }
+    };
 
-    setupDragging(id) {
+    instance.setupDragging = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
@@ -113,9 +108,9 @@
         windowData.cleanupDragging = () => {
             titleBar.removeEventListener('mousedown', onMouseDown);
         };
-    }
+    };
 
-    setupResizing(id) {
+    instance.setupResizing = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
@@ -138,9 +133,9 @@
                 handle.removeEventListener('mousedown', onMouseDown);
             });
         });
-    }
+    };
 
-    startDragging(id, e) {
+    instance.startDragging = function(id, e) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
@@ -167,9 +162,9 @@
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
-    }
+    };
 
-    startResizing(id, e, direction) {
+    instance.startResizing = function(id, e, direction) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
@@ -202,9 +197,9 @@
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
-    }
+    };
 
-    updateDragPosition(id, e) {
+    instance.updateDragPosition = function(id, e) {
         const windowData = this.windows.get(id);
         if (!windowData || !windowData.isDragging) return;
 
@@ -223,9 +218,9 @@
 
         windowData.element.style.left = `${newX}px`;
         windowData.element.style.top = `${newY}px`;
-    }
+    };
 
-    updateResizePosition(id, e) {
+    instance.updateResizePosition = function(id, e) {
         const windowData = this.windows.get(id);
         if (!windowData || !windowData.isResizing) return;
 
@@ -302,16 +297,16 @@
         windowData.element.style.height = `${newHeight}px`;
         windowData.element.style.left = `${newX}px`;
         windowData.element.style.top = `${newY}px`;
-    }
+    };
 
-    setCallbacks(id, dotNetRef) {
+    instance.setCallbacks = function(id, dotNetRef) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
         windowData.dotNetRef = dotNetRef;
-    }
+    };
 
-    show(id) {
+    instance.show = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) {
             console.warn('Window data not found for id:', id);
@@ -348,9 +343,9 @@
                 windowData.dotNetRef.invokeMethodAsync("InvokeOnShow").catch(console.error);
             }
         }
-    }
+    };
 
-    hide(id) {
+    instance.hide = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) {
             console.warn('Window data not found for hide id:', id);
@@ -362,9 +357,9 @@
         if (windowData.dotNetRef) {
             windowData.dotNetRef.invokeMethodAsync("InvokeOnHide").catch(console.error);
         }
-    }
+    };
 
-    toggle(id) {
+    instance.toggle = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
@@ -373,13 +368,13 @@
         } else {
             this.hide(id);
         }
-    }
+    };
 
-    close(id) {
+    instance.close = function(id) {
         this.hide(id);
-    }
+    };
 
-    destroy(id) {
+    instance.destroy = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) {
             console.warn('Window data not found for destroy id:', id);
@@ -408,9 +403,9 @@
         }
 
         this.windows.delete(id);
-    }
+    };
 
-    getPosition(id) {
+    instance.getPosition = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) return { x: 0, y: 0 };
 
@@ -418,17 +413,17 @@
             x: parseInt(windowData.element.style.left) || 0,
             y: parseInt(windowData.element.style.top) || 0
         };
-    }
+    };
 
-    setPosition(id, x, y) {
+    instance.setPosition = function(id, x, y) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
         windowData.element.style.left = `${x}px`;
         windowData.element.style.top = `${y}px`;
-    }
+    };
 
-    getSize(id) {
+    instance.getSize = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) return { width: 0, height: 0 };
 
@@ -436,31 +431,31 @@
             width: windowData.element.offsetWidth,
             height: windowData.element.offsetHeight
         };
-    }
+    };
 
-    setSize(id, width, height) {
+    instance.setSize = function(id, width, height) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
         windowData.element.style.width = `${width}px`;
         windowData.element.style.height = `${height}px`;
-    }
+    };
 
-    bringToFront(id) {
+    instance.bringToFront = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
 
         windowData.element.style.zIndex = this.nextZIndex++;
-    }
+    };
 
-    getViewportSize() {
+    instance.getViewportSize = function() {
         return {
             width: window.innerWidth,
             height: window.innerHeight
         };
-    }
+    };
 
-    centerInViewport(id) {
+    instance.centerInViewport = function(id) {
         const windowData = this.windows.get(id);
         if (!windowData) return;
         const el = windowData.element;
@@ -481,7 +476,67 @@
         // Restore previous display/visibility
         el.style.display = prevDisplay;
         el.style.visibility = prevVisibility;
-    }
+    };
+
+        instance.windows = new Map();
+        instance.activeWindow = null;
+        instance.nextZIndex = 1000;
+    
+
+    return instance;
+})();
+export function create(id, optionsJson) {
+    return interop.create(id, optionsJson);
 }
 
-window.FloatingWindowInterop = new FloatingWindowInterop();
+export function setCallbacks(id, dotNetRef) {
+    return interop.setCallbacks(id, dotNetRef);
+}
+
+export function destroy(id) {
+    return interop.destroy(id);
+}
+
+export function show(id) {
+    return interop.show(id);
+}
+
+export function hide(id) {
+    return interop.hide(id);
+}
+
+export function toggle(id) {
+    return interop.toggle(id);
+}
+
+export function close(id) {
+    return interop.close(id);
+}
+
+export function getPosition(id) {
+    return interop.getPosition(id);
+}
+
+export function setPosition(id, x, y) {
+    return interop.setPosition(id, x, y);
+}
+
+export function getSize(id) {
+    return interop.getSize(id);
+}
+
+export function setSize(id, width, height) {
+    return interop.setSize(id, width, height);
+}
+
+export function bringToFront(id) {
+    return interop.bringToFront(id);
+}
+
+export function getViewportSize() {
+    return interop.getViewportSize();
+}
+
+export function centerInViewport(id) {
+    return interop.centerInViewport(id);
+}
