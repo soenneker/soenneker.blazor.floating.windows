@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 using Soenneker.Asyncs.Initializers;
 using Soenneker.Blazor.Floating.Windows.Abstract;
@@ -26,7 +25,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     private readonly CancellationScope _cancellationScope = new();
 
-    public FloatingWindowInterop(IJSRuntime jSRuntime, IResourceLoader resourceLoader, IModuleImportUtil moduleImportUtil)
+    public FloatingWindowInterop(IResourceLoader resourceLoader, IModuleImportUtil moduleImportUtil)
     {
         _resourceLoader = resourceLoader;
         _moduleImportUtil = moduleImportUtil;
@@ -76,7 +75,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Initialize(bool useCdn = true, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await _scriptInitializer.Init(useCdn, linked);
@@ -84,7 +83,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Create(string id, FloatingWindowOptions options, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -105,7 +104,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Destroy(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -116,7 +115,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Show(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -127,7 +126,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Hide(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -138,7 +137,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Toggle(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -149,7 +148,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask Close(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -160,7 +159,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask<(int x, int y)> GetPosition(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -171,7 +170,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask SetPosition(string id, int x, int y, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -182,7 +181,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask<FloatingWindowSize> GetSize(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -193,7 +192,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask SetSize(string id, int width, int height, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -204,7 +203,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask BringToFront(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -215,7 +214,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask<FloatingWindowSize> GetViewportSize(CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -226,7 +225,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
     public async ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {

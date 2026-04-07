@@ -15,7 +15,8 @@ public static class FloatingWindowRegistrar
     /// </summary>
     public static IServiceCollection AddFloatingWindowAsScoped(this IServiceCollection services)
     {
-        services.AddResourceLoaderAsScoped().TryAddScoped<IFloatingWindowInterop, FloatingWindowInterop>();
+        services.AddResourceLoaderAsScoped()
+                .TryAddScoped<IFloatingWindowInterop, FloatingWindowInterop>();
 
         return services;
     }

@@ -1,6 +1,8 @@
-const interop = (() => {
-    const instance = {};
-    instance.create = async function(id, optionsJson) {
+const floatingWindows = new Map();
+let activeFloatingWindow = null;
+let nextZIndex = 1000;
+
+export async function create(id, optionsJson) {
         const options = JSON.parse(optionsJson);
 
         const window = document.getElementById(id);
@@ -21,7 +23,7 @@ const interop = (() => {
         // Set initial styles
         try {
             window.style.position = 'fixed';
-            window.style.zIndex = options.zIndex || this.nextZIndex++;
+            window.style.zIndex = options.zIndex || nextZIndex++;
 
             if (options.autoSizeToContent) {
                 window.style.width = 'auto';
@@ -57,7 +59,7 @@ const interop = (() => {
                     window.style.width = 'auto';
                     window.style.height = 'auto';
                     // Notify .NET to recenter if enabled
-                    const windowData = this.windows.get(id);
+                    const windowData = floatingWindows.get(id);
                     if (options.recenterOnResize && windowData && windowData.dotNetRef) {
                         windowData.dotNetRef.invokeMethodAsync('OnContentResized').catch(console.error);
                     }
@@ -67,7 +69,7 @@ const interop = (() => {
         }
 
         // Store window data
-        this.windows.set(id, {
+        floatingWindows.set(id, {
             element: window,
             options: options,
             isDragging: false,
@@ -80,17 +82,15 @@ const interop = (() => {
 
         // Setup dragging
         if (options.draggable) {
-            this.setupDragging(id);
+            setupDragging(id);
         }
 
         // Setup resizing
         if (options.resizable) {
-            this.setupResizing(id);
+            setupResizing(id);
         }
-    };
-
-    instance.setupDragging = function(id) {
-        const windowData = this.windows.get(id);
+}function setupDragging(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         const titleBar = windowData.element.querySelector('.floating-window-titlebar');
@@ -98,7 +98,7 @@ const interop = (() => {
 
         const onMouseDown = (e) => {
             e.preventDefault();
-            this.startDragging(id, e);
+            startDragging(id, e);
         };
 
         titleBar.addEventListener('mousedown', onMouseDown);
@@ -108,10 +108,8 @@ const interop = (() => {
         windowData.cleanupDragging = () => {
             titleBar.removeEventListener('mousedown', onMouseDown);
         };
-    };
-
-    instance.setupResizing = function(id) {
-        const windowData = this.windows.get(id);
+    };function setupResizing(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         const resizeHandles = windowData.element.querySelectorAll('.floating-window-resize-handle');
@@ -120,7 +118,7 @@ const interop = (() => {
             const direction = handle.dataset.direction;
             const onMouseDown = (e) => {
                 e.preventDefault();
-                this.startResizing(id, e, direction);
+                startResizing(id, e, direction);
             };
 
             handle.addEventListener('mousedown', onMouseDown);
@@ -133,10 +131,8 @@ const interop = (() => {
                 handle.removeEventListener('mousedown', onMouseDown);
             });
         });
-    };
-
-    instance.startDragging = function(id, e) {
-        const windowData = this.windows.get(id);
+    };function startDragging(id, e) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         windowData.isDragging = true;
@@ -145,27 +141,25 @@ const interop = (() => {
             y: e.clientY - windowData.element.offsetTop
         };
 
-        this.bringToFront(id);
-        this.activeWindow = id;
+        bringToFront(id);
+        activeFloatingWindow = id;
 
         const onMouseMove = (e) => {
             if (!windowData.isDragging) return;
-            this.updateDragPosition(id, e);
+            updateDragPosition(id, e);
         };
 
         const onMouseUp = () => {
             windowData.isDragging = false;
-            this.activeWindow = null;
+            activeFloatingWindow = null;
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
         };
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
-    };
-
-    instance.startResizing = function(id, e, direction) {
-        const windowData = this.windows.get(id);
+    };function startResizing(id, e, direction) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         windowData.isResizing = true;
@@ -179,28 +173,26 @@ const interop = (() => {
             mouseY: e.clientY
         };
 
-        this.bringToFront(id);
-        this.activeWindow = id;
+        bringToFront(id);
+        activeFloatingWindow = id;
 
         const onMouseMove = (e) => {
             if (!windowData.isResizing) return;
-            this.updateResizePosition(id, e);
+            updateResizePosition(id, e);
         };
 
         const onMouseUp = () => {
             windowData.isResizing = false;
             windowData.resizeDirection = null;
-            this.activeWindow = null;
+            activeFloatingWindow = null;
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
         };
 
         document.addEventListener('mousemove', onMouseMove);
         document.addEventListener('mouseup', onMouseUp);
-    };
-
-    instance.updateDragPosition = function(id, e) {
-        const windowData = this.windows.get(id);
+    };function updateDragPosition(id, e) {
+        const windowData = floatingWindows.get(id);
         if (!windowData || !windowData.isDragging) return;
 
         let newX = e.clientX - windowData.dragStart.x;
@@ -218,10 +210,8 @@ const interop = (() => {
 
         windowData.element.style.left = `${newX}px`;
         windowData.element.style.top = `${newY}px`;
-    };
-
-    instance.updateResizePosition = function(id, e) {
-        const windowData = this.windows.get(id);
+    };function updateResizePosition(id, e) {
+        const windowData = floatingWindows.get(id);
         if (!windowData || !windowData.isResizing) return;
 
         const deltaX = e.clientX - windowData.resizeStart.mouseX;
@@ -297,17 +287,13 @@ const interop = (() => {
         windowData.element.style.height = `${newHeight}px`;
         windowData.element.style.left = `${newX}px`;
         windowData.element.style.top = `${newY}px`;
-    };
-
-    instance.setCallbacks = function(id, dotNetRef) {
-        const windowData = this.windows.get(id);
+    };export function setCallbacks(id, dotNetRef) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         windowData.dotNetRef = dotNetRef;
-    };
-
-    instance.show = function(id) {
-        const windowData = this.windows.get(id);
+    };export function show(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) {
             console.warn('Window data not found for id:', id);
             return;
@@ -343,10 +329,8 @@ const interop = (() => {
                 windowData.dotNetRef.invokeMethodAsync("InvokeOnShow").catch(console.error);
             }
         }
-    };
-
-    instance.hide = function(id) {
-        const windowData = this.windows.get(id);
+    };export function hide(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) {
             console.warn('Window data not found for hide id:', id);
             return;
@@ -357,25 +341,19 @@ const interop = (() => {
         if (windowData.dotNetRef) {
             windowData.dotNetRef.invokeMethodAsync("InvokeOnHide").catch(console.error);
         }
-    };
-
-    instance.toggle = function(id) {
-        const windowData = this.windows.get(id);
+    };export function toggle(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         if (windowData.element.style.display === 'none') {
-            this.show(id);
+            show(id);
         } else {
-            this.hide(id);
+            hide(id);
         }
-    };
-
-    instance.close = function(id) {
-        this.hide(id);
-    };
-
-    instance.destroy = function(id) {
-        const windowData = this.windows.get(id);
+    };export function close(id) {
+        hide(id);
+    };export function destroy(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) {
             console.warn('Window data not found for destroy id:', id);
             return;
@@ -402,61 +380,47 @@ const interop = (() => {
             windowData.element.parentNode.removeChild(windowData.element);
         }
 
-        this.windows.delete(id);
-    };
-
-    instance.getPosition = function(id) {
-        const windowData = this.windows.get(id);
+        floatingWindows.delete(id);
+    };export function getPosition(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return { x: 0, y: 0 };
 
         return {
             x: parseInt(windowData.element.style.left) || 0,
             y: parseInt(windowData.element.style.top) || 0
         };
-    };
-
-    instance.setPosition = function(id, x, y) {
-        const windowData = this.windows.get(id);
+    };export function setPosition(id, x, y) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         windowData.element.style.left = `${x}px`;
         windowData.element.style.top = `${y}px`;
-    };
-
-    instance.getSize = function(id) {
-        const windowData = this.windows.get(id);
+    };export function getSize(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return { width: 0, height: 0 };
 
         return {
             width: windowData.element.offsetWidth,
             height: windowData.element.offsetHeight
         };
-    };
-
-    instance.setSize = function(id, width, height) {
-        const windowData = this.windows.get(id);
+    };export function setSize(id, width, height) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
         windowData.element.style.width = `${width}px`;
         windowData.element.style.height = `${height}px`;
-    };
-
-    instance.bringToFront = function(id) {
-        const windowData = this.windows.get(id);
+    };export function bringToFront(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
 
-        windowData.element.style.zIndex = this.nextZIndex++;
-    };
-
-    instance.getViewportSize = function() {
+        windowData.element.style.zIndex = nextZIndex++;
+    };export function getViewportSize() {
         return {
             width: window.innerWidth,
             height: window.innerHeight
         };
-    };
-
-    instance.centerInViewport = function(id) {
-        const windowData = this.windows.get(id);
+    };export function centerInViewport(id) {
+        const windowData = floatingWindows.get(id);
         if (!windowData) return;
         const el = windowData.element;
         // Temporarily make visible to measure if needed
@@ -477,66 +441,3 @@ const interop = (() => {
         el.style.display = prevDisplay;
         el.style.visibility = prevVisibility;
     };
-
-        instance.windows = new Map();
-        instance.activeWindow = null;
-        instance.nextZIndex = 1000;
-    
-
-    return instance;
-})();
-export function create(id, optionsJson) {
-    return interop.create(id, optionsJson);
-}
-
-export function setCallbacks(id, dotNetRef) {
-    return interop.setCallbacks(id, dotNetRef);
-}
-
-export function destroy(id) {
-    return interop.destroy(id);
-}
-
-export function show(id) {
-    return interop.show(id);
-}
-
-export function hide(id) {
-    return interop.hide(id);
-}
-
-export function toggle(id) {
-    return interop.toggle(id);
-}
-
-export function close(id) {
-    return interop.close(id);
-}
-
-export function getPosition(id) {
-    return interop.getPosition(id);
-}
-
-export function setPosition(id, x, y) {
-    return interop.setPosition(id, x, y);
-}
-
-export function getSize(id) {
-    return interop.getSize(id);
-}
-
-export function setSize(id, width, height) {
-    return interop.setSize(id, width, height);
-}
-
-export function bringToFront(id) {
-    return interop.bringToFront(id);
-}
-
-export function getViewportSize() {
-    return interop.getViewportSize();
-}
-
-export function centerInViewport(id) {
-    return interop.centerInViewport(id);
-}
