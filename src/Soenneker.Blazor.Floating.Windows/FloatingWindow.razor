@@ -7,6 +7,7 @@
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.Floating.Windows.Dtos
 @using Soenneker.Extensions.CancellationTokens
+@using Soenneker.Blazor.Utils.Ids
 
 @inject IFloatingWindowInterop WindowInterop
 @inject ILogger<FloatingWindow> Logger
@@ -61,7 +62,7 @@
     public RenderFragment? HeaderContent { get; set; }
 
     [Parameter]
-    public override string? Id { get; set; } = "fw-" + Guid.NewGuid();
+    public override string? Id { get; set; } = BlazorIdGenerator.New("fw");
 
     [Parameter]
     public string? Title { get; set; }
