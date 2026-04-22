@@ -1,16 +1,15 @@
-using Soenneker.Tests.FixturedUnit;
-using Xunit;
+using Soenneker.Tests.HostedUnit;
 
 namespace Soenneker.Blazor.Floating.Windows.Tests;
 
-[Collection("Collection")]
-public sealed class FloatingWindowTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public sealed class FloatingWindowTests : HostedUnitTest
 {
-    public FloatingWindowTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public FloatingWindowTests(Host host) : base(host)
     {
     }
 
-    [Fact]
+    [Test]
     public void Default()
     {
     }

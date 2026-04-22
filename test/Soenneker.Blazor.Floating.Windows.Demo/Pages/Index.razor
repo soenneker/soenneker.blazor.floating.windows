@@ -21,7 +21,7 @@
             <Button OnClick="ShowInteractiveWindow" Variant="ButtonVariant.Secondary">Interactive</Button>
             <Button OnClick="ShowDataWindow" Variant="ButtonVariant.Secondary">Data table</Button>
         </Grid>
-        <Div Display="Display.Flex" Flex="Flex.Wrap" Gap="Gap.Is2" Margin="Margin.Is3.FromTop">
+        <Div Display="Display.Flex" Flex=@("flex-wrap") Gap="Gap.Is2" Margin="Margin.Is3.FromTop">
             <Button OnClick="ShowAllWindows" Variant="ButtonVariant.Outline">Show all</Button>
             <Button OnClick="HideAllWindows" Variant="ButtonVariant.Outline">Hide all</Button>
         </Div>
@@ -51,7 +51,7 @@
 
     <Div Space="Space.Y.Is3">
         <H2 TextSize="TextSize.Xl" FontWeight="FontWeight.Semibold">Code samples</H2>
-        <Div Display="Display.Flex" Flex="Flex.Wrap" Gap="Gap.Is2">
+        <Div Display="Display.Flex" Flex=@("flex-wrap") Gap="Gap.Is2">
             <Button OnClick="SetTabBasic" Variant="@(activeTab == "basic" ? ButtonVariant.Secondary : ButtonVariant.Outline)">Basic usage</Button>
             <Button OnClick="SetTabCustom" Variant="@(activeTab == "custom" ? ButtonVariant.Secondary : ButtonVariant.Outline)">Custom styling</Button>
             <Button OnClick="SetTabEvents" Variant="@(activeTab == "events" ? ButtonVariant.Secondary : ButtonVariant.Outline)">Events</Button>
