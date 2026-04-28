@@ -13,7 +13,7 @@
         <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">
             Open sample windows and try drag, resize, and themed chrome.
         </Paragraph>
-        <Grid Columns="Columns.Is1.OnMd.Is2.OnLg.Is3" Gap="Gap.Is3">
+        <Grid Columns="GridCols.Is1.OnMd.Is2.OnLg.Is3" Gap="Gap.Is3">
             <Button OnClick="ShowBasicWindow">Basic window</Button>
             <Button OnClick="ShowCustomWindow" Variant="ButtonVariant.Secondary">Custom styled</Button>
             <Button OnClick="ShowCenteredWindow" Variant="ButtonVariant.Outline">Centered</Button>
@@ -29,7 +29,7 @@
 
     <Div Space="Space.Y.Is3">
         <H2 TextSize="TextSize.Xl" FontWeight="FontWeight.Semibold">Features</H2>
-        <Grid Columns="Columns.Is1.OnMd.Is2" Gap="Gap.Is4">
+        <Grid Columns="GridCols.Is1.OnMd.Is2" Gap="Gap.Is4">
             <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Space="Space.Y.Is2">
                 <Div TextSize="TextSize.Lg">Draggable</Div>
                 <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Drag by the title bar to reposition.</Paragraph>
@@ -92,7 +92,7 @@
 
     <Div Space="Space.Y.Is3">
         <H2 TextSize="TextSize.Xl" FontWeight="FontWeight.Semibold">Activity</H2>
-        <Grid Columns="Columns.Is2.OnMd.Is4" Gap="Gap.Is3">
+        <Grid Columns="GridCols.Is2.OnMd.Is4" Gap="Gap.Is3">
             <Div Rounded="Rounded.Lg" Border="Border.Is1" BorderColor="BorderColor.Border" Padding="Padding.Is4" Class="text-center">
                 <Div TextSize="TextSize.TwoXl" FontWeight="FontWeight.Bold">@windowShowCount</Div>
                 <Paragraph TextSize="TextSize.Sm" Class="text-muted-foreground">Windows shown</Paragraph>
