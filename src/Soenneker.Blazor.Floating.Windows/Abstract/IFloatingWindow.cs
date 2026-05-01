@@ -3,14 +3,14 @@ using Soenneker.Blazor.Floating.Windows.Dtos;
 using Soenneker.Blazor.Floating.Windows.Options;
 using System.Threading;
 using System.Threading.Tasks;
-using Soenneker.Quark;
+using Soenneker.Lepton.Suite.Abstract;
 
 namespace Soenneker.Blazor.Floating.Windows.Abstract;
 
 /// <summary>
 /// Represents a floating window component instance with customizable appearance, behavior, and lifecycle methods.
 /// </summary>
-public interface IFloatingWindow : ICoreCancellableElement
+public interface IFloatingWindow : ILeptonCancellableIdentifiableContentElement
 {
     /// <summary>
     /// Callback triggered when the window becomes visible.

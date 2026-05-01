@@ -12,7 +12,7 @@
 @inject IFloatingWindowInterop WindowInterop
 @inject ILogger<FloatingWindow> Logger
 
-@inherits Soenneker.Quark.CoreCancellableElement
+@inherits Soenneker.Lepton.Suite.LeptonCancellableIdentifiableContentElement
 @implements IFloatingWindow
 
 <div id="@Id!"
@@ -60,9 +60,10 @@
 
     [Parameter]
     public RenderFragment? HeaderContent { get; set; }
-
-    [Parameter]
-    public override string? Id { get; set; } = BlazorIdGenerator.New("fw");
+    public FloatingWindow()
+    {
+        Id = BlazorIdGenerator.New("fw");
+    }
 
     [Parameter]
     public string? Title { get; set; }
