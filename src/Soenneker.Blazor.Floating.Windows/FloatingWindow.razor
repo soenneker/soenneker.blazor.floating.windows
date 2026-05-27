@@ -1,10 +1,10 @@
 @using System.Threading
-@using Microsoft.JSInterop
 @using Soenneker.Blazor.Extensions.EventCallback
 @using Soenneker.Blazor.Floating.Windows.Abstract
 @using Soenneker.Blazor.Floating.Windows.Options
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.Logging
+@using Microsoft.JSInterop
 @using Soenneker.Blazor.Floating.Windows.Dtos
 @using Soenneker.Extensions.CancellationTokens
 @using Soenneker.Blazor.Utils.Ids
@@ -15,10 +15,7 @@
 @inherits Soenneker.Lepton.Suite.LeptonCancellableIdentifiableContentElement
 @implements IFloatingWindow
 
-<div id="@Id!"
-     class="floating-window @(_visible ? "visible" : "") @(MergedOptions.StyleOptions.CustomClass)"
-     style="@GetWindowStyles()"
-     data-dark-mode="@MergedOptions.StyleOptions.UseDarkMode.ToString().ToLower()" >
+<div id="@Id!" class="floating-window @(_visible ? "visible" : "") @(MergedOptions.StyleOptions.CustomClass)" style="@GetWindowStyles()" data-dark-mode="@MergedOptions.StyleOptions.UseDarkMode.ToString().ToLower()" >
     @if (MergedOptions.ShowTitleBar)
     {
         <div class="floating-window-titlebar" style="@GetTitleBarStyles()" >
@@ -60,6 +57,7 @@
 
     [Parameter]
     public RenderFragment? HeaderContent { get; set; }
+
     public FloatingWindow()
     {
         Id = BlazorIdGenerator.New("fw");
@@ -228,7 +226,7 @@
             await Task.Delay(10, CancellationToken);
 
             await WindowInterop.Create(Id!, MergedOptions, CancellationToken);
-            await WindowInterop.SetCallbacks(Id!, _dotNetRef!);
+            await WindowInterop.SetCallbacks(Id!, _dotNetRef!, CancellationToken);
 
             // Set initialized after everything is done
             _initialized = true;

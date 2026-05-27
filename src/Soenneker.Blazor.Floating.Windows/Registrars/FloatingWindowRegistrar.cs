@@ -1,7 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Soenneker.Blazor.Floating.Windows.Abstract;
-using Soenneker.Blazor.Utils.ResourceLoader.Registrars;
+using Soenneker.Blazor.Interops.Floating.Registrars;
 
 namespace Soenneker.Blazor.Floating.Windows.Registrars;
 
@@ -15,8 +15,7 @@ public static class FloatingWindowRegistrar
     /// </summary>
     public static IServiceCollection AddFloatingWindowAsScoped(this IServiceCollection services)
     {
-        services.AddResourceLoaderAsScoped()
-                .TryAddScoped<IFloatingWindowInterop, FloatingWindowInterop>();
+        services.AddFloatingUiInteropAsScoped().TryAddScoped<IFloatingWindowInterop, FloatingWindowInterop>();
 
         return services;
     }

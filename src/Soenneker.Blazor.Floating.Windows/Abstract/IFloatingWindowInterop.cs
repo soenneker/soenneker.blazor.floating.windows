@@ -33,7 +33,9 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// </summary>
     /// <param name="id">The unique window ID.</param>
     /// <param name="dotNetRef">A .NET reference to the component implementing the JSInvokable event handlers.</param>
-    ValueTask SetCallbacks(string id, DotNetObjectReference<FloatingWindow> dotNetRef);
+    /// <param name="cancellationToken"></param>
+    ValueTask SetCallbacks(string id, DotNetObjectReference<FloatingWindow> dotNetRef,
+        CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Destroys a previously initialized window instance, unregistering its events and observers.
@@ -124,9 +126,4 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// <param name="id">The window ID.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
     ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default);
-
-    /// <summary>
-    /// Disposes internal state and JavaScript module references.
-    /// </summary>
-    new ValueTask DisposeAsync();
 }
