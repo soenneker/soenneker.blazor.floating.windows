@@ -2,6 +2,7 @@
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.Floating.Windows
 @using Soenneker.Blazor.Floating.Windows.Options
+@using FloatingWindowComponent = Soenneker.Blazor.Floating.Windows.FloatingWindow
 
 @inject ILogger<Index> Logger
 
@@ -114,7 +115,7 @@
 </Div>
 
 <!-- Basic Window -->
-<FloatingWindow @ref="basicWindow"
+<Soenneker.Blazor.Floating.Windows.FloatingWindow @ref="basicWindow"
                 Title="Basic Window"
                 Width="@("400")"
                 Height="@("300")"
@@ -138,10 +139,10 @@
         </div>
         <button @onclick="() => basicWindow?.Hide()" class="window-button">Hide Window</button>
     </div>
-</FloatingWindow>
+</Soenneker.Blazor.Floating.Windows.FloatingWindow>
 
 <!-- Custom Window -->
-<FloatingWindow @ref="customWindow"
+<Soenneker.Blazor.Floating.Windows.FloatingWindow @ref="customWindow"
                 Title="Custom Styled Window"
                 Width="@("500")"
                 Height="@("400")"
@@ -169,10 +170,10 @@
             <button @onclick="() => customWindow?.SetSize(600, 450)" class="window-button">Resize</button>
         </div>
     </div>
-</FloatingWindow>
+</Soenneker.Blazor.Floating.Windows.FloatingWindow>
 
 <!-- Centered Window -->
-<FloatingWindow @ref="centeredWindow"
+<Soenneker.Blazor.Floating.Windows.FloatingWindow @ref="centeredWindow"
                 Title="Centered Window"
                 Width="@("500")"
                 Height="@("400")"
@@ -187,10 +188,10 @@
             <button @onclick="SetPositionToCenter" class="window-button small">Re-center</button>
         </div>
     </div>
-</FloatingWindow>
+</Soenneker.Blazor.Floating.Windows.FloatingWindow>
 
 <!-- Dark Window -->
-<FloatingWindow @ref="darkWindow"
+<Soenneker.Blazor.Floating.Windows.FloatingWindow @ref="darkWindow"
                 Title="Dark Theme Window"
                 Width="@("500")"
                 Height="@("400")"
@@ -208,10 +209,10 @@
         </div>
         <button @onclick="() => darkWindow?.Hide()" class="window-button">Hide Window</button>
     </div>
-</FloatingWindow>
+</Soenneker.Blazor.Floating.Windows.FloatingWindow>
 
 <!-- Interactive Window -->
-<FloatingWindow @ref="interactiveWindow"
+<Soenneker.Blazor.Floating.Windows.FloatingWindow @ref="interactiveWindow"
                 Title="Interactive Demo"
                 Width="@("500")"
                 Height="@("400")"
@@ -244,10 +245,10 @@
             <button @onclick="() => interactiveWindow?.Hide()" class="window-button">Close</button>
         </div>
     </div>
-</FloatingWindow>
+</Soenneker.Blazor.Floating.Windows.FloatingWindow>
 
 <!-- Data Window -->
-<FloatingWindow @ref="dataWindow"
+<Soenneker.Blazor.Floating.Windows.FloatingWindow @ref="dataWindow"
                 Title="Data Display Window"
                 Width="@("500")"
                 Height="@("400")"
@@ -294,15 +295,15 @@
             <button @onclick="() => dataWindow?.Hide()" class="window-button">Close</button>
         </div>
     </div>
-</FloatingWindow>
+</Soenneker.Blazor.Floating.Windows.FloatingWindow>
 
 @code {
-    private FloatingWindow? basicWindow;
-    private FloatingWindow? customWindow;
-    private FloatingWindow? centeredWindow;
-    private FloatingWindow? darkWindow;
-    private FloatingWindow? interactiveWindow;
-    private FloatingWindow? dataWindow;
+    private FloatingWindowComponent? basicWindow;
+    private FloatingWindowComponent? customWindow;
+    private FloatingWindowComponent? centeredWindow;
+    private FloatingWindowComponent? darkWindow;
+    private FloatingWindowComponent? interactiveWindow;
+    private FloatingWindowComponent? dataWindow;
 
     private string activeTab = "basic";
     private int windowShowCount;
