@@ -18,6 +18,7 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// </summary>
     /// <param name="useCdn">Whether to load scripts from CDN or from local embedded resources.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the Floating Window is ready for use.</returns>
     ValueTask Initialize(bool useCdn = true, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -26,50 +27,57 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// <param name="id">The unique ID used to resolve window DOM elements.</param>
     /// <param name="options">The configuration options used for window behavior.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the create operation is complete.</returns>
     ValueTask Create(string id, FloatingWindowOptions options, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Registers a Blazor component's instance for receiving window lifecycle event callbacks.
     /// </summary>
-    /// <param name="id">The unique window ID.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="dotNetRef">A .NET reference to the component implementing the JSInvokable event handlers.</param>
-    /// <param name="cancellationToken"></param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the callbacks has been stored.</returns>
     ValueTask SetCallbacks(string id, DotNetObjectReference<FloatingWindow> dotNetRef,
         CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Destroys a previously initialized window instance, unregistering its events and observers.
     /// </summary>
-    /// <param name="id">The ID of the window to clean up.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the destroy operation is complete.</returns>
     ValueTask Destroy(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Shows the window.
     /// </summary>
-    /// <param name="id">The window ID.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the show operation is complete.</returns>
     ValueTask Show(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Hides the window.
     /// </summary>
-    /// <param name="id">The window ID.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the hide operation is complete.</returns>
     ValueTask Hide(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Toggles the window visibility.
     /// </summary>
-    /// <param name="id">The window ID.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the toggle operation is complete.</returns>
     ValueTask Toggle(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Closes the window (hides and disposes).
     /// </summary>
-    /// <param name="id">The window ID.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the close operation is complete.</returns>
     ValueTask Close(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -83,10 +91,11 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// <summary>
     /// Sets the position of the window.
     /// </summary>
-    /// <param name="id">The window ID.</param>
-    /// <param name="x">The X coordinate.</param>
-    /// <param name="y">The Y coordinate.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
+    /// <param name="x">Operand passed to the accumulator function.</param>
+    /// <param name="y">Vertical coordinate to apply.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the position has been stored.</returns>
     ValueTask SetPosition(string id, int x, int y, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -100,17 +109,19 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// <summary>
     /// Sets the size of the window.
     /// </summary>
-    /// <param name="id">The window ID.</param>
-    /// <param name="width">The width.</param>
-    /// <param name="height">The height.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
+    /// <param name="width">Width to apply.</param>
+    /// <param name="height">Height to apply.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the size has been stored.</returns>
     ValueTask SetSize(string id, int width, int height, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Brings the window to the front (highest z-index).
     /// </summary>
-    /// <param name="id">The window ID.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the bring to front operation is complete.</returns>
     ValueTask BringToFront(string id, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -123,7 +134,8 @@ public interface IFloatingWindowInterop : IAsyncDisposable
     /// <summary>
     /// Centers the window in the viewport, accounting for its current size, without making it visible.
     /// </summary>
-    /// <param name="id">The window ID.</param>
+    /// <param name="id">Identifier of the floating window instance or registration to target.</param>
     /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the center in viewport operation is complete.</returns>
     ValueTask CenterInViewport(string id, CancellationToken cancellationToken = default);
 }

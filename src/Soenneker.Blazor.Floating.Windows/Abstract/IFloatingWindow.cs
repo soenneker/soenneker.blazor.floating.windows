@@ -90,46 +90,67 @@ public interface IFloatingWindow : ILeptonCancellableIdentifiableContentElement
     /// <summary>
     /// Shows the window.
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the show operation is complete.</returns>
     ValueTask Show(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Hides the window.
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the hide operation is complete.</returns>
     ValueTask Hide(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Toggles the window visibility.
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the toggle operation is complete.</returns>
     ValueTask Toggle(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Closes the window (hides and disposes).
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the close operation is complete.</returns>
     ValueTask Close(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the current position of the window.
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task whose result is the requested (int x, int y).</returns>
     ValueTask<(int x, int y)> GetPosition(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the position of the window.
     /// </summary>
+    /// <param name="x">Operand passed to the accumulator function.</param>
+    /// <param name="y">Vertical coordinate to apply.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the position has been stored.</returns>
     ValueTask SetPosition(int x, int y, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Gets the current size of the window.
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
     /// <returns>A WindowSize object containing the width and height.</returns>
     ValueTask<FloatingWindowSize> GetSize(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the size of the window.
     /// </summary>
+    /// <param name="width">Width to apply.</param>
+    /// <param name="height">Height to apply.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the size has been stored.</returns>
     ValueTask SetSize(int width, int height, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Centers the window in the viewport, accounting for its width and height.
     /// </summary>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the center operation is complete.</returns>
     ValueTask Center(CancellationToken cancellationToken = default);
 }

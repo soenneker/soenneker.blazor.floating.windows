@@ -13,6 +13,8 @@ public static class FloatingWindowRegistrar
     /// <summary>
     /// Adds <see cref="IFloatingWindow"/> as a scoped service. <para/>
     /// </summary>
+    /// <param name="services">Service collection that receives the registration.</param>
+    /// <returns>The same service collection, so additional registrations can be chained.</returns>
     public static IServiceCollection AddFloatingWindowAsScoped(this IServiceCollection services)
     {
         services.AddFloatingUiInteropAsScoped().TryAddScoped<IFloatingWindowInterop, FloatingWindowInterop>();
