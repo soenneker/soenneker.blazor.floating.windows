@@ -3,6 +3,7 @@ let activeFloatingWindow = null;
 let nextZIndex = 1000;
 
 export async function create(id, optionsJson) {
+        destroy(id);
         const options = JSON.parse(optionsJson);
 
         const window = document.getElementById(id);
@@ -136,6 +137,7 @@ export async function create(id, optionsJson) {
         if (!windowData) return;
 
         windowData.isDragging = true;
+        windowData.dotNetRef?.invokeMethodAsync('InvokeOnDragStart').catch(console.error);
         windowData.dragStart = {
             x: e.clientX - windowData.element.offsetLeft,
             y: e.clientY - windowData.element.offsetTop
@@ -154,6 +156,14 @@ export async function create(id, optionsJson) {
             activeFloatingWindow = null;
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
+            windowData.cleanupActiveDrag = null;
+            windowData.dotNetRef?.invokeMethodAsync('InvokeOnDragEnd').catch(console.error);
+        };
+
+        windowData.cleanupActiveDrag = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            windowData.isDragging = false;
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -187,6 +197,13 @@ export async function create(id, optionsJson) {
             activeFloatingWindow = null;
             document.removeEventListener('mousemove', onMouseMove);
             document.removeEventListener('mouseup', onMouseUp);
+            windowData.cleanupActiveResize = null;
+        };
+
+        windowData.cleanupActiveResize = () => {
+            document.removeEventListener('mousemove', onMouseMove);
+            document.removeEventListener('mouseup', onMouseUp);
+            windowData.isResizing = false;
         };
 
         document.addEventListener('mousemove', onMouseMove);
@@ -354,10 +371,7 @@ export async function create(id, optionsJson) {
         hide(id);
     };export function destroy(id) {
         const windowData = floatingWindows.get(id);
-        if (!windowData) {
-            console.warn('Window data not found for destroy id:', id);
-            return;
-        }
+        if (!windowData) return;
 
         // Cleanup event listeners
         if (windowData.cleanupDragging) {
@@ -366,6 +380,8 @@ export async function create(id, optionsJson) {
         if (windowData.cleanupResizing) {
             windowData.cleanupResizing.forEach(cleanup => cleanup());
         }
+        windowData.cleanupActiveDrag?.();
+        windowData.cleanupActiveResize?.();
         // Cleanup ResizeObserver
         if (windowData.resizeObserver) {
             const content = windowData.element.querySelector('.floating-window-content');
@@ -373,11 +389,6 @@ export async function create(id, optionsJson) {
                 windowData.resizeObserver.unobserve(content);
             }
             windowData.resizeObserver.disconnect();
-        }
-
-        // Remove from DOM
-        if (windowData.element.parentNode) {
-            windowData.element.parentNode.removeChild(windowData.element);
         }
 
         floatingWindows.delete(id);

@@ -356,6 +356,9 @@
 
         using (cts)
             await WindowInterop.Destroy(Id!, linked);
+
+        _initialized = false;
+        _visible = false;
     }
 
     private string GetWindowStyles()
@@ -446,10 +449,16 @@
 
     public override async ValueTask DisposeAsync()
     {
-        await base.DisposeAsync();
+        try
+        {
+            if (_initialized)
+                await WindowInterop.Destroy(Id!, CancellationToken.None);
+        }
+        catch (JSDisconnectedException) { }
+        catch (ObjectDisposedException) { }
 
-        await WindowInterop.Destroy(Id!, CancellationToken.None);
         _dotNetRef?.Dispose();
+        await base.DisposeAsync();
     }
 
 }
