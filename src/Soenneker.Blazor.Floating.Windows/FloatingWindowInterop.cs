@@ -14,7 +14,7 @@ using Soenneker.Utils.Json;
 
 namespace Soenneker.Blazor.Floating.Windows;
 
-///<inheritdoc cref="IFloatingWindowInterop"/>
+/// <inheritdoc cref="IFloatingWindowInterop"/>
 public sealed class FloatingWindowInterop : IFloatingWindowInterop
 {
     private const string _modulePath = "_content/Soenneker.Blazor.Floating.Windows/js/floatingwindowinterop.js";
