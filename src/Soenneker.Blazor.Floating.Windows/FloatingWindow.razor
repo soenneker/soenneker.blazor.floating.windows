@@ -1,4 +1,5 @@
 @using System.Threading
+@using System.Text
 @using Soenneker.Blazor.Extensions.EventCallback
 @using Soenneker.Blazor.Floating.Windows.Abstract
 @using Soenneker.Blazor.Floating.Windows.Options
@@ -15,8 +16,8 @@
 @inherits Soenneker.Lepton.Suite.LeptonCancellableIdentifiableContentElement
 @implements IFloatingWindow
 
-<div id="@Id!" class="floating-window @(_visible ? "visible" : "") @(MergedOptions.StyleOptions.CustomClass)" style="@GetWindowStyles()" data-dark-mode="@MergedOptions.StyleOptions.UseDarkMode.ToString().ToLower()" >
-    @if (MergedOptions.ShowTitleBar)
+<div id="@Id!" class="floating-window @(_visible ? "visible" : "") @(ResolvedStyleOptions.CustomClass)" style="@GetWindowStyles()" data-dark-mode="@(ResolvedStyleOptions.UseDarkMode ? "true" : "false")" >
+    @if ((ShowTitleBar ?? Options.ShowTitleBar))
     {
         <div class="floating-window-titlebar" style="@GetTitleBarStyles()" >
             @if (HeaderContent != null)
@@ -25,9 +26,9 @@
             }
             else
             {
-                <div class="floating-window-title" style="@GetTitleStyles()" >@(MergedOptions.Title ?? "Window")</div>
+                <div class="floating-window-title" style="@GetTitleStyles()" >@((Title ?? Options.Title) ?? "Window")</div>
             }
-            @if (MergedOptions.ShowCloseButton)
+            @if ((ShowCloseButton ?? Options.ShowCloseButton))
             {
                 <button class="floating-window-close" type="button" aria-label="Close" style="@GetCloseButtonStyles()" @onclick="OnCloseClick" >
                     <span>&times;</span>
@@ -40,7 +41,7 @@
         @ChildContent
     </div>
 
-    @if (MergedOptions.Resizable)
+    @if ((Resizable ?? Options.Resizable))
     {
         <div class="floating-window-resize-handle resize-n" data-direction="n" ></div>
         <div class="floating-window-resize-handle resize-e" data-direction="e" ></div>
@@ -119,6 +120,8 @@
 
     public bool IsVisible => _visible;
 
+    private FloatingWindowStyleOptions ResolvedStyleOptions => StyleOptions ?? Options.StyleOptions;
+
     private FloatingWindowOptions MergedOptions => new()
     {
         Draggable = Draggable ?? Options.Draggable,
@@ -177,7 +180,7 @@
     [JSInvokable]
     public async Task OnContentResized()
     {
-        if (MergedOptions.RecenterOnResize)
+        if ((RecenterOnResize ?? Options.RecenterOnResize))
         {
             await Center();
         }
@@ -219,7 +222,7 @@
             // if (Height.HasValue)
             //     MergedOptions.Height = Height.Value;
 
-            await WindowInterop.Initialize(MergedOptions.UseCdn, CancellationToken);
+            await WindowInterop.Initialize((UseCdn ?? Options.UseCdn), CancellationToken);
             _dotNetRef = DotNetObjectReference.Create(this);
 
             // Wait a bit to ensure the element is in the DOM
@@ -244,7 +247,7 @@
             {
                 try
                 {
-                    if (MergedOptions.CenterOnShow)
+                    if (Options.CenterOnShow)
                     {
                         await WindowInterop.CenterInViewport(Id!, linked);
                     }
@@ -363,88 +366,56 @@
 
     private string GetWindowStyles()
     {
-        var styles = new List<string>
-        {
-            $"background-color: {MergedOptions.StyleOptions.BackgroundColor}",
-            $"border: {MergedOptions.StyleOptions.BorderWidth} solid {MergedOptions.StyleOptions.BorderColor}",
-            $"border-radius: {MergedOptions.StyleOptions.BorderRadius}",
-            $"box-shadow: {MergedOptions.StyleOptions.BoxShadow}",
-            $"color: {MergedOptions.StyleOptions.TextColor}",
-            $"font-family: {MergedOptions.StyleOptions.FontFamily}",
-            $"font-size: {MergedOptions.StyleOptions.FontSize}",
-            $"line-height: {MergedOptions.StyleOptions.LineHeight}",
-            $"min-width: {MergedOptions.StyleOptions.MinWidth}",
-            $"min-height: {MergedOptions.StyleOptions.MinHeight}",
-            $"z-index: {MergedOptions.StyleOptions.ZIndex}",
-            $"transition: opacity {MergedOptions.StyleOptions.TransitionDuration} {MergedOptions.StyleOptions.TransitionTimingFunction}, transform {MergedOptions.StyleOptions.TransitionDuration} {MergedOptions.StyleOptions.TransitionTimingFunction}",
-            $"--close-button-hover-bg: {MergedOptions.StyleOptions.CloseButtonHoverBackgroundColor}",
-            $"--close-button-active-bg: {MergedOptions.StyleOptions.CloseButtonActiveBackgroundColor}",
-            $"--resize-handle-hover-bg: {MergedOptions.StyleOptions.ResizeHandleHoverBackgroundColor}",
-            $"--focus-box-shadow: {MergedOptions.StyleOptions.BoxShadow}, 0 0 0 {MergedOptions.StyleOptions.FocusBorderWidth} {MergedOptions.StyleOptions.FocusBorderColor}"
-        };
+        FloatingWindowStyleOptions style = ResolvedStyleOptions;
+        var builder = new StringBuilder(1024);
+        builder.Append($"background-color: {style.BackgroundColor}");
+        builder.Append($"; border: {style.BorderWidth} solid {style.BorderColor}");
+        builder.Append($"; border-radius: {style.BorderRadius}");
+        builder.Append($"; box-shadow: {style.BoxShadow}");
+        builder.Append($"; color: {style.TextColor}");
+        builder.Append($"; font-family: {style.FontFamily}");
+        builder.Append($"; font-size: {style.FontSize}");
+        builder.Append($"; line-height: {style.LineHeight}");
+        builder.Append($"; min-width: {style.MinWidth}");
+        builder.Append($"; min-height: {style.MinHeight}");
+        builder.Append($"; z-index: {style.ZIndex}");
+        builder.Append($"; transition: opacity {style.TransitionDuration} {style.TransitionTimingFunction}, transform {style.TransitionDuration} {style.TransitionTimingFunction}");
+        builder.Append($"; --close-button-hover-bg: {style.CloseButtonHoverBackgroundColor}");
+        builder.Append($"; --close-button-active-bg: {style.CloseButtonActiveBackgroundColor}");
+        builder.Append($"; --resize-handle-hover-bg: {style.ResizeHandleHoverBackgroundColor}");
+        builder.Append($"; --focus-box-shadow: {style.BoxShadow}, 0 0 0 {style.FocusBorderWidth} {style.FocusBorderColor}");
 
-        // Add custom styles if provided
-        if (MergedOptions.StyleOptions.CustomStyles != null)
+        if (style.CustomStyles != null)
         {
-            foreach (KeyValuePair<string, string> customStyle in MergedOptions.StyleOptions.CustomStyles)
-            {
-                styles.Add($"{customStyle.Key}: {customStyle.Value}");
-            }
+            foreach (KeyValuePair<string, string> customStyle in style.CustomStyles)
+                builder.Append($"; {customStyle.Key}: {customStyle.Value}");
         }
 
-        return string.Join("; ", styles);
+        return builder.ToString();
     }
 
     private string GetTitleBarStyles()
     {
-        var styles = new List<string>
-        {
-            $"background: {MergedOptions.StyleOptions.TitleBarBackgroundGradient ?? MergedOptions.StyleOptions.TitleBarBackgroundColor}",
-            $"color: {MergedOptions.StyleOptions.TitleBarTextColor}",
-            $"font-weight: {MergedOptions.StyleOptions.TitleBarFontWeight}",
-            $"font-size: {MergedOptions.StyleOptions.TitleBarFontSize}",
-            $"padding: {MergedOptions.StyleOptions.TitleBarPadding}",
-            $"border-bottom: 1px solid {MergedOptions.StyleOptions.TitleBarBorderBottomColor}"
-        };
-
-        return string.Join("; ", styles);
+        FloatingWindowStyleOptions style = ResolvedStyleOptions;
+        return $"background: {style.TitleBarBackgroundGradient ?? style.TitleBarBackgroundColor}; color: {style.TitleBarTextColor}; font-weight: {style.TitleBarFontWeight}; font-size: {style.TitleBarFontSize}; padding: {style.TitleBarPadding}; border-bottom: 1px solid {style.TitleBarBorderBottomColor}";
     }
 
     private string GetTitleStyles()
     {
-        var styles = new List<string>
-        {
-            $"color: {MergedOptions.StyleOptions.TitleBarTextColor}",
-            $"font-weight: {MergedOptions.StyleOptions.TitleBarFontWeight}",
-            $"font-size: {MergedOptions.StyleOptions.TitleBarFontSize}"
-        };
-
-        return string.Join("; ", styles);
+        FloatingWindowStyleOptions style = ResolvedStyleOptions;
+        return $"color: {style.TitleBarTextColor}; font-weight: {style.TitleBarFontWeight}; font-size: {style.TitleBarFontSize}";
     }
 
     private string GetCloseButtonStyles()
     {
-        var styles = new List<string>
-        {
-            $"background-color: {MergedOptions.StyleOptions.CloseButtonBackgroundColor}",
-            $"color: {MergedOptions.StyleOptions.CloseButtonTextColor}",
-            $"border-radius: {MergedOptions.StyleOptions.CloseButtonBorderRadius}",
-            $"font-size: {MergedOptions.StyleOptions.CloseButtonFontSize}",
-            $"transition: background-color {MergedOptions.StyleOptions.TransitionDuration} {MergedOptions.StyleOptions.TransitionTimingFunction}"
-        };
-
-        return string.Join("; ", styles);
+        FloatingWindowStyleOptions style = ResolvedStyleOptions;
+        return $"background-color: {style.CloseButtonBackgroundColor}; color: {style.CloseButtonTextColor}; border-radius: {style.CloseButtonBorderRadius}; font-size: {style.CloseButtonFontSize}; transition: background-color {style.TransitionDuration} {style.TransitionTimingFunction}";
     }
 
     private string GetContentStyles()
     {
-        var styles = new List<string>
-        {
-            $"padding: {MergedOptions.StyleOptions.ContentPadding}",
-            $"color: {MergedOptions.StyleOptions.TextColor}"
-        };
-
-        return string.Join("; ", styles);
+        FloatingWindowStyleOptions style = ResolvedStyleOptions;
+        return $"padding: {style.ContentPadding}; color: {style.TextColor}";
     }
 
     public override async ValueTask DisposeAsync()
