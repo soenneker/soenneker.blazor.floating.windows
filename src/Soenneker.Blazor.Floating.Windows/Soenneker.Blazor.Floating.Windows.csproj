@@ -51,7 +51,7 @@
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="10.0.12" />
 <PackageReference Include="Soenneker.Blazor.Extensions.EventCallback" Version="4.0.459" />
         <PackageReference Include="Soenneker.Blazor.Interops.Floating" Version="4.0.77" />
-<PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.74" />
-        <PackageReference Include="Soenneker.Utils.Json" Version="4.0.2688" />
+<PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.75" />
+        <PackageReference Include="Soenneker.Utils.Json" Version="4.0.2689" />
     </ItemGroup>
 </Project>
