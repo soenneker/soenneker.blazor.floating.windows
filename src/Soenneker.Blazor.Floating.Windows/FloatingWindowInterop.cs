@@ -17,6 +17,11 @@ namespace Soenneker.Blazor.Floating.Windows;
 /// <inheritdoc cref="IFloatingWindowInterop"/>
 public sealed class FloatingWindowInterop : IFloatingWindowInterop
 {
+    private readonly System.Text.Json.JsonSerializerOptions _jsonOptions;
+
+    private System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> GetJsonTypeInfo<T>() =>
+        (System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>)_jsonOptions.GetTypeInfo(typeof(T));
+
     private const string _modulePath = "_content/Soenneker.Blazor.Floating.Windows/js/floatingwindowinterop.js";
 
     private readonly IResourceLoader _resourceLoader;
@@ -27,8 +32,9 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
     private readonly CancellationScope _cancellationScope = new();
 
     public FloatingWindowInterop(IResourceLoader resourceLoader, IFloatingUiInterop floatingUiInterop,
-        IModuleImportUtil moduleImportUtil)
+        IModuleImportUtil moduleImportUtil, System.Text.Json.Serialization.JsonSerializerContext? jsonContext = null)
     {
+        _jsonOptions = LibraryJsonContext.WithContext(jsonContext);
         _resourceLoader = resourceLoader;
         _floatingUiInterop = floatingUiInterop;
         _moduleImportUtil = moduleImportUtil;
@@ -64,7 +70,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         {
             await _scriptInitializer.Init(options.UseCdn, linked);
 
-            string json = JsonUtil.Serialize(options)!;
+            string json = JsonUtil.Serialize(options, GetJsonTypeInfo<FloatingWindowOptions>())!;
 
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
             await module.InvokeVoidAsync("create", linked, id, json);
