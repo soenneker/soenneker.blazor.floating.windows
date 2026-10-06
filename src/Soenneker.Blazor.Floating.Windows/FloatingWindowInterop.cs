@@ -1,3 +1,6 @@
+using System.Text.Json.Serialization.Metadata;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
@@ -17,6 +20,10 @@ namespace Soenneker.Blazor.Floating.Windows;
 /// <inheritdoc cref="IFloatingWindowInterop"/>
 public sealed class FloatingWindowInterop : IFloatingWindowInterop
 {
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    private JsonTypeInfo<T> GetJsonTypeInfo<T>() => (JsonTypeInfo<T>)_jsonOptions.GetTypeInfo(typeof(T));
+
 
 
     private const string _modulePath = "_content/Soenneker.Blazor.Floating.Windows/js/floatingwindowinterop.js";
@@ -29,8 +36,9 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
     private readonly CancellationScope _cancellationScope = new();
 
     public FloatingWindowInterop(IResourceLoader resourceLoader, IFloatingUiInterop floatingUiInterop,
-        IModuleImportUtil moduleImportUtil)
+        IModuleImportUtil moduleImportUtil, JsonSerializerContext? jsonContext = null)
     {
+        _jsonOptions = LibraryJsonContext.WithContext(jsonContext);
         _resourceLoader = resourceLoader;
         _floatingUiInterop = floatingUiInterop;
         _moduleImportUtil = moduleImportUtil;
@@ -66,7 +74,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         {
             await _scriptInitializer.Init(options.UseCdn, linked);
 
-            string json = JsonUtil.Serialize(options)!;
+            string json = JsonUtil.Serialize(options, GetJsonTypeInfo<FloatingWindowOptions>())!;
 
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
             await module.InvokeVoidAsync("create", linked, id, json);
@@ -148,7 +156,9 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         using (source)
         {
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            return await module.InvokeAsync<(int x, int y)>("getPosition", linked, id);
+            JsonElement payload = await module.InvokeAsync<JsonElement>("getPosition", linked, id);
+            FloatingWindowPosition? position = payload.Deserialize(GetJsonTypeInfo<FloatingWindowPosition>());
+            return position is null ? default : (position.X, position.Y);
         }
     }
 
@@ -172,7 +182,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         using (source)
         {
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            return await module.InvokeAsync<FloatingWindowSize>("getSize", linked, id);
+            JsonElement payload = await module.InvokeAsync<JsonElement>("getSize", linked, id);
+            return payload.Deserialize(GetJsonTypeInfo<FloatingWindowSize>())!;
         }
     }
 
@@ -208,7 +219,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
         using (source)
         {
             IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-            return await module.InvokeAsync<FloatingWindowSize>("getViewportSize", linked);
+            JsonElement payload = await module.InvokeAsync<JsonElement>("getViewportSize", linked);
+            return payload.Deserialize(GetJsonTypeInfo<FloatingWindowSize>())!;
         }
     }
 

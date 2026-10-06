@@ -9,6 +9,8 @@ namespace Soenneker.Blazor.Floating.Windows;
 
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, ReadCommentHandling = JsonCommentHandling.Skip, UseStringEnumConverter = true)]
 [JsonSerializable(typeof(FloatingWindowOptions))]
+[JsonSerializable(typeof(FloatingWindowPosition))]
+[JsonSerializable(typeof(FloatingWindowSize))]
 [JsonSerializable(typeof(object))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(bool))]
