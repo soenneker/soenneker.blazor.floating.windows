@@ -4,6 +4,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.JSInterop;
+using Soenneker.Blazor.Extensions.IJSObjectReferences;
 using Soenneker.Blazor.Interops.Floating.Abstract;
 using Soenneker.Asyncs.Initializers;
 using Soenneker.Blazor.Floating.Windows.Abstract;
@@ -72,34 +73,20 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                await _scriptInitializer.Init(options.UseCdn, linked);
+            await _scriptInitializer.Init(options.UseCdn, linked);
 
-                string json = JsonUtil.Serialize(options, GetJsonTypeInfo<FloatingWindowOptions>())!;
+            string json = JsonUtil.Serialize(options, GetJsonTypeInfo<FloatingWindowOptions>())!;
 
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("create", linked, id, json);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.Create' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("create", linked, id, json);
         }
     }
 
     public async ValueTask SetCallbacks(string id, DotNetObjectReference<FloatingWindow> dotNetRef,
         CancellationToken cancellationToken = default)
     {
-        try
-        {
-            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, cancellationToken);
-            await module.InvokeVoidAsync("setCallbacks", cancellationToken, id, dotNetRef);
-        }
-        catch (JSException exception)
-        {
-            throw new JSException($"JavaScript operation 'FloatingWindowInterop.SetCallbacks' failed: {exception.Message}", exception);
-        }
+        IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, cancellationToken);
+        await module.InvokeVoidWithContextAsync("setCallbacks", cancellationToken, id, dotNetRef);
     }
 
     public async ValueTask Destroy(string id, CancellationToken cancellationToken = default)
@@ -109,15 +96,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("destroy", linked, id);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.Destroy' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("destroy", linked, id);
         }
     }
 
@@ -128,15 +108,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("show", linked, id);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.Show' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("show", linked, id);
         }
     }
 
@@ -147,15 +120,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("hide", linked, id);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.Hide' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("hide", linked, id);
         }
     }
 
@@ -166,15 +132,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("toggle", linked, id);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.Toggle' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("toggle", linked, id);
         }
     }
 
@@ -185,15 +144,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("close", linked, id);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.Close' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("close", linked, id);
         }
     }
 
@@ -204,17 +156,10 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                JsonElement payload = await module.InvokeAsync<JsonElement>("getPosition", linked, id);
-                FloatingWindowPosition? position = payload.Deserialize(GetJsonTypeInfo<FloatingWindowPosition>());
-                return position is null ? default : (position.X, position.Y);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.GetPosition' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            JsonElement payload = await module.InvokeWithContextAsync<JsonElement>("getPosition", linked, id);
+            FloatingWindowPosition? position = payload.Deserialize(GetJsonTypeInfo<FloatingWindowPosition>());
+            return position is null ? default : (position.X, position.Y);
         }
     }
 
@@ -225,15 +170,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("setPosition", linked, id, x, y);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.SetPosition' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("setPosition", linked, id, x, y);
         }
     }
 
@@ -244,16 +182,9 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                JsonElement payload = await module.InvokeAsync<JsonElement>("getSize", linked, id);
-                return payload.Deserialize(GetJsonTypeInfo<FloatingWindowSize>())!;
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.GetSize' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            JsonElement payload = await module.InvokeWithContextAsync<JsonElement>("getSize", linked, id);
+            return payload.Deserialize(GetJsonTypeInfo<FloatingWindowSize>())!;
         }
     }
 
@@ -264,15 +195,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("setSize", linked, id, width, height);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.SetSize' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("setSize", linked, id, width, height);
         }
     }
 
@@ -283,15 +207,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("bringToFront", linked, id);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.BringToFront' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("bringToFront", linked, id);
         }
     }
 
@@ -302,16 +219,9 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                JsonElement payload = await module.InvokeAsync<JsonElement>("getViewportSize", linked);
-                return payload.Deserialize(GetJsonTypeInfo<FloatingWindowSize>())!;
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.GetViewportSize' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            JsonElement payload = await module.InvokeWithContextAsync<JsonElement>("getViewportSize", linked);
+            return payload.Deserialize(GetJsonTypeInfo<FloatingWindowSize>())!;
         }
     }
 
@@ -322,15 +232,8 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
         using (source)
         {
-            try
-            {
-                IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
-                await module.InvokeVoidAsync("centerInViewport", linked, id);
-            }
-            catch (JSException exception)
-            {
-                throw new JSException($"JavaScript operation 'FloatingWindowInterop.CenterInViewport' failed: {exception.Message}", exception);
-            }
+            IJSObjectReference module = await _moduleImportUtil.GetContentModuleReference(_modulePath, linked);
+            await module.InvokeVoidWithContextAsync("centerInViewport", linked, id);
         }
     }
 
