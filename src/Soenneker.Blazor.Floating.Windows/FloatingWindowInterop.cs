@@ -27,7 +27,7 @@ public sealed class FloatingWindowInterop : IFloatingWindowInterop
 
 
 
-    private const string _modulePath = "_content/Soenneker.Blazor.Floating.Windows/js/floatingwindowinterop.js";
+    private const string _modulePath = "_content/Soenneker.Blazor.Floating.Windows/js/floatingwindowinterop.min.js";
 
     private readonly IResourceLoader _resourceLoader;
     private readonly IFloatingUiInterop _floatingUiInterop;
