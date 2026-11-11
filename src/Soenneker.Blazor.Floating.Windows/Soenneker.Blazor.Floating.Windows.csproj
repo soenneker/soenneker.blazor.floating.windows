@@ -53,9 +53,9 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="11.0.0" />
 <PackageReference Include="Soenneker.Blazor.Extensions.EventCallback" Version="11.0.476" />
-        <PackageReference Include="Soenneker.Blazor.Interops.Floating" Version="11.0.154" />
-<PackageReference Include="Soenneker.Lepton.Suite" Version="11.0.142" />
-        <PackageReference Include="Soenneker.Utils.Json" Version="11.0.2786" />
+        <PackageReference Include="Soenneker.Blazor.Interops.Floating" Version="11.0.157" />
+<PackageReference Include="Soenneker.Lepton.Suite" Version="11.0.143" />
+        <PackageReference Include="Soenneker.Utils.Json" Version="11.0.2787" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Soenneker.Blazor.Floating.Windows.TrimSmoke" />
@@ -64,6 +64,6 @@
         <PackageReference Include="Soenneker.Blazor.Extensions.IJSObjectReferences" Version="11.0.6" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Soenneker.Gen.Web.Minifier" Version="11.0.61" PrivateAssets="all" />
+        <PackageReference Include="Soenneker.Gen.Web.Minifier" Version="11.0.63" PrivateAssets="all" />
     </ItemGroup>
 </Project>
